@@ -1,0 +1,28 @@
+body {
+	margin: 0;
+	overflow: hidden;
+}
+
+.errText {
+	border: 2px solid #222222;
+	border-radius: 4px;
+	display: block !important;
+	color: #000000;
+	background: repeating-linear-gradient(
+		45deg,
+		#FFCCCC,
+		#FFCCCC 5px,
+		#FFFFCC 5px,
+		#FFFFCC 10px
+	);
+	text-align: center;
+}
+
+.clarity-outline {
+	color: black;
+	text-shadow:
+	-1px -1px 0 #fff,
+	1px -1px 0 #fff,
+	-1px 1px 0 #fff,
+	1px 1px 0 #fff;
+}
