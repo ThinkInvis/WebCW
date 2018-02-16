@@ -43,7 +43,11 @@ WebCW.CreeperGame.Modules.Units.Turret = function(args) {
 	_this.isTgtOccluded = function(tgtpos) {
 		var inds = _this.Game.GetLine(_this.Position, tgtpos);
 		for(var i = 0; i < inds.length; i++) {
-			if(_this.Game.IsSolidIndex[_this.Game.Type[inds[i]]] == 1) return true;
+			for(var j = 0; j < _this.Game.Substances.length; j++) {
+				if(_this.Game.Substances[j].BlocksTurrets) {
+					if(_this.Game.Val[j][inds[i]] > 0) return true;
+				}
+			}
 		}
 		return false;
 	};
@@ -65,9 +69,8 @@ WebCW.CreeperGame.Modules.Units.Turret = function(args) {
 		var tgti=0;
 		for(var i = 0; i < _this.targetsList.length; i++) {
 			if(_this.Game.Dirty[_this.targetsList[i][1]]) {
-				//if(_this.debugT) console.log("Turret detected dirty target");
 				_this.targetsList[i][2] = _this.isTgtOccluded(_this.targetsList[i][3]);
-				if(!_this.targetsList[i][2] && _this.Game.Type[_this.targetsList[i][1]] == 3) {
+				if(!_this.targetsList[i][2] && _this.Game.Val[_this.Game.SubstanceIDIndex["Creeper"]][_this.targetsList[i][1]] > 0) {
 					if(_this.targetsList[i][0] <= closest) {
 						closest = _this.targetsList[i][0];
 						tgts.push(_this.targetsList[i]);
@@ -85,15 +88,9 @@ WebCW.CreeperGame.Modules.Units.Turret = function(args) {
 			var tgtp = _this.Game.IndexToCoord(tgti);
 			_this.Mesh.lookAt(_this.Game.IndexToVec3(tgti));
 			_this.fireAccum = _this.fireTimeout;
-			var pressureLeft = _this.antiPressure;
 			
-			var pSub = Math.max(_this.Game.ValOoP[tgti]-_this.antiPressure,0);
-			pressureLeft -= pSub;
-			_this.Game.ValOoP[tgti] -= pSub;
-			if(pressureLeft > 0) {
-				_this.Game.TypeOoP[tgti] = _this.Game.TypeIndex.indexOf("Explosion");
-				_this.Game.ValOoP[tgti] = pressureLeft;
-			}
+			_this.Game.Val[_this.Game.SubstanceIDIndex["Explosion"]][tgti] += _this.antiPressure;
+			_this.Game.ValOoP[_this.Game.SubstanceIDIndex["Explosion"]][tgti] += _this.antiPressure;
 			_this.FiringTracer.visible = true;
 			_this.FiringTracer.setLength(tgt[0]);
 		}

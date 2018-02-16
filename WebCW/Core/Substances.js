@@ -1,22 +1,24 @@
+//just a "structure", with all functions handled in CreeperGame instead of here -- can this be replaced with something else?
 WebCW.CreeperGame.Substance = function(args) {
 	var _this = this;
-	_this.OptionalArgs = {
-		Interactions: {},
-		DisplayName: _this.IDName,
-		Material: _this.undefSubstMtl
+	_this.DefaultArgs = {
+		Color: [1, 0, 0],
+		IsSolid: true,
+		IsVisible: true,
+		GlobalPressure: [0,0,0,0,0,0],
+		SpreadLimit: 0,
+		EvapLimit: 0.01,
+		ConstEvap: 1,
+		SpreadRate: 1,
+		Class: "Terrain",
+		IsClamped: true, //prevents negative pressure
+		BlocksTurrets: false
 	};
-	_this.RequiredArgs = ["IDName", "Class", "Density"];
-	initArgs(_this, args);
-	
-	_this.checkInteractions = function(cell, deltaTime) {
-		var RetProps = {};
-		for(var jac in cell) {
-			for(var iac in _this.Interactions) {
-				if(jac.Class == iac) {
-					_this.Interactions[iac](jac, cell[jac], deltaTime, RetProps);
-				}
-			}
+	_this.DftGenArgs = {
+		DisplayName: function() {
+			return _this.IDName
 		}
-		return RetProps;
 	};
+	_this.RequiredArgs = ["IDName"];
+	initArgs(_this, args);
 };

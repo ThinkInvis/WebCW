@@ -191,30 +191,35 @@ WebCW.CreeperGame.Modules.Gfx.VoxelRenderer = function(args) {
 							for(kk = 0; kk < _this.ChunkSize.x; kk++) {
 								icoord = [k*_this.ChunkSize.x+kk, j*_this.ChunkSize.y+jj, i*_this.ChunkSize.z+ii];
 								iind = _this.Game.CoordToIndex(icoord);
+								var didRend = false;
+								for(var mm = 0; mm < _this.Game.Substances.length; mm++) {
+									ival = _this.Game.Val[mm][iind];
+									if(ival != 0 && _this.Game.Substances[mm].IsVisible) {
+										var sbs = _this.Game.Substances[mm];
+										didRend = true;
+										if(sbs.IsSolid) {
+											nch.IIColorsS.setXYZ(iitr, sbs.Color[0], sbs.Color[1], sbs.Color[2]);
+											nch.IIVisible.setX(iitr, 0);
+											nch.IIVisibleS.setX(iitr, 1);
+											nch.IIScaleS.setX(iitr, 1);
+											nch.rendColliders[iitr].visible = true;
+										} else {
+											nch.IIColors.setXYZ(iitr, sbs.Color[0], sbs.Color[1], sbs.Color[2]);
+											nch.IIVisible.setX(iitr, 1);
+											nch.IIVisibleS.setX(iitr, 0);
+											nch.IIScale.setX(iitr, Math.pow(1-1/(ival+1),4));
+											nch.rendColliders[iitr].visible = false;
+										}
+										break;
+									}
+								}
 								
-								ival = _this.Game.Val[iind];
-								
-								if(ival === 0) {
+								if(!didRend) {
 									nch.IIVisible.setX(iitr, 0);
 									nch.IIVisibleS.setX(iitr, 0);
 									nch.rendColliders[iitr].visible = false;
-								} else {
-									ityp = _this.Game.Type[iind];
-									
-									if(_this.Game.IsSolidIndex[ityp]) {
-										nch.IIColorsS.setXYZ(iitr, _this.Game.ColorRIndex[ityp], _this.Game.ColorGIndex[ityp], _this.Game.ColorBIndex[ityp]);
-										nch.IIVisible.setX(iitr, 0);
-										nch.IIVisibleS.setX(iitr, _this.Game.VisibilityIndex[ityp]);
-										nch.IIScaleS.setX(iitr, 1);
-									nch.rendColliders[iitr].visible = true;
-									} else {
-										nch.IIColors.setXYZ(iitr, _this.Game.ColorRIndex[ityp], _this.Game.ColorGIndex[ityp], _this.Game.ColorBIndex[ityp]);
-										nch.IIVisible.setX(iitr, _this.Game.VisibilityIndex[ityp]);
-										nch.IIVisibleS.setX(iitr, 0);
-										nch.IIScale.setX(iitr, Math.pow(1-1/(ival+1),4));
-									nch.rendColliders[iitr].visible = false;
-									}
 								}
+								
 								iitr++;
 							}
 						}

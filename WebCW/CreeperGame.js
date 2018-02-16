@@ -133,11 +133,13 @@ WebCW.UnsafeCode = function(attachto) {
 	_this.gui = new dat.GUI({width: 300});
 	var folderAdder = _this.gui.addFolder('Pencil');
 	var params = {
-		pencilAmt: 100,
-		pencilType: 3
+		pencilAmt: 1,
+		pencilAmtPow10: 2,
+		pencilType: 4
 	};
-	folderAdder.add(params, 'pencilAmt', 0, 1000000);
-	folderAdder.add(params, 'pencilType', _this.Game.TypeIndexI);
+	folderAdder.add(params, 'pencilAmt', 0, 10);
+	folderAdder.add(params, 'pencilAmtPow10', -30, 30);
+	folderAdder.add(params, 'pencilType', _this.Game.SubstanceNameIndex);
 	folderAdder.open();
 	
 	_this.onKeyDown = function(rndr, key, t, dt, args) {
@@ -145,12 +147,17 @@ WebCW.UnsafeCode = function(attachto) {
 			var htind = _this.LastRaycastResult[0].object.GdIndx;
 			var upind = _this.Game.Vec3ToIndex(new THREE.Vector3().copy(_this.LastRaycastResult[0].face.normal).add(_this.Game.IndexToVec3(_this.LastRaycastResult[0].object.GdIndx)));
 			if(key == 68) {
-				_this.Game.ValOoP[htind] = 0;
-				_this.Game.TypeOoP[htind] = 0;
-				_this.Game.Dirty[htind] = 1;
+				for(var i = 0; i < _this.Game.Substances.length; i++) {
+					_this.Game.Val[i][htind] = 0;
+					_this.Game.ValBuf[i][htind] = 0;
+					_this.Game.ValOoP[i][htind] = 0;
+					_this.Game.Dirty[htind] = 1;
+				}
 			} else if(key == 84) {
-				_this.Game.ValOoP[upind] = params.pencilAmt;
-				_this.Game.TypeOoP[upind] = params.pencilType;
+				var pAdd = params.pencilAmt * Math.pow(10, params.pencilAmtPow10);
+				_this.Game.Val[params.pencilType][upind] = pAdd;
+				_this.Game.ValBuf[params.pencilType][upind] = pAdd;
+				_this.Game.ValOoP[params.pencilType][upind] = pAdd;
 				_this.Game.Dirty[upind] = 1;
 			}
 		}
@@ -168,19 +175,6 @@ WebCW.UnsafeCode = function(attachto) {
 WebCW.CreeperGame = function(iniargs) {
 	//SETUP
 	var _this = this;
-	_this.DefaultArgs = {
-		CreeperProps: {
-			viscosity: 0.3,
-			evaplimit: 0.02,
-			spreadlimit: 1,
-			globalPressure: [
-				-1, -1, -6, //Add to positive-coord Von Neumann neighbors
-				-1, -1, 3 //Add to negative-coord Von Neumann neighbors
-			]
-		}, Settings: {
-			CellRate: 10
-		}
-	};
 	_this.DftGenArgs = {
 		Renderer: function() {return new WebCW.CreeperGame.WebGLRenderer({});}
 	};
@@ -195,99 +189,97 @@ WebCW.CreeperGame = function(iniargs) {
 	_this.ModuleObjects = [];
 	_this.Colliders = [];
 	
-	//TODO: apply "delta logic" to OoP transferral, flag cells/chunks as "dirty", "interior", "LoS" for the voxel renderer
-	_this.TypeIndex = [
-		"Atmosphere",
-		"WorldBoundary",
-		"Dirt",
-		"Creeper",
-		"Stone",
-		"Anticreep",
-		"Explosion"
-	];
-	_this.TypeIndexI = {
-		"Atmosphere": 0,
-		"WorldBoundary": 1,
-		"Dirt": 2,
-		"Creeper": 3,
-		"Stone": 4,
-		"Anticreep": 5,
-		"Explosion": 6
-	};
-	_this.ClassIndex = [
-		"Yield",
-		"Terrain",
-		"Terrain",
-		"Liquid",
-		"Terrain",
-		"Liquid",
-		"Liquid"
-	];
-	_this.ColorRIndex = [
-		0/255,
-		255/255,
-		119/255,
-		255/255,
-		51/255,
-		0/255,
-		125/255
-	];
-	_this.ColorGIndex = [
-		0/255,
-		255/255,
-		68/255,
-		0/255,
-		51/255,
-		204/255,
-		125/255
-	];
-	_this.ColorBIndex = [
-		0/255,
-		255/255,
-		34/255,
-		255/255,
-		51/255,
-		255/255,
-		125/255
-	];
-	_this.VisibilityIndex = [
-		0,
-		0,
-		1,
-		1,
-		1,
-		1,
-		1
-	];
-	_this.IsSolidIndex = [
-		false,
-		true,
-		true,
-		false,
-		true,
-		false,
-		false
+	_this.Substances = [
+		new WebCW.CreeperGame.Substance({IDName: "Atmosphere", IsSolid: false, Class: "Yield", IsVisible: false}),
+		new WebCW.CreeperGame.Substance({IDName: "WorldBoundary", DisplayName: "OUT OF BOUNDS", Class: "Terrain", IsVisible: false}),
+		new WebCW.CreeperGame.Substance({IDName: "Dirt", Color: [119/255, 68/255, 34/255], BlocksTurrets: true}),
+		new WebCW.CreeperGame.Substance({IDName: "Creeper", IsSolid: false, Class: "Liquid",
+			GlobalPressure: [
+				-1, -1, -6, //Add to positive-coord Von Neumann neighbors
+				-1, -1, 3 //Add to negative-coord Von Neumann neighbors
+			], SpreadLimit: 0, EvapLimit: 0.01, SpreadRate: 4, Color: [255/255, 0/255, 255/255]}),
+		new WebCW.CreeperGame.Substance({IDName: "Explosion", Color: [70/255, 70/255, 70/255], IsSolid: false, Class: "Liquid", GlobalPressure: [0,0,0,0,0,0], SpreadLimit: 0, EvapLimit: 0.1, SpreadRate: 10, ConstEvap: 0.25}),
+		new WebCW.CreeperGame.Substance({IDName: "Shield", Color: [10/255, 60/255, 255/255]}),
+		new WebCW.CreeperGame.Substance({IDName: "CrystalCreep", DisplayName: "Crystallized Creeper", Color: [125/255, 10/255, 125/255]}),
+		new WebCW.CreeperGame.Substance({IDName: "TNT", DisplayName: "Trinitrotoluene", Color: [125/255, 10/255, 10/255], EvapLimit: 1})
 	];
 	
-	_this.AnnihilationIndex = [
-		[],
-		[],
-		[],
-		[],
-		[],
-		[],
-		[3]
+	_this.SubstanceIDIndex = {
+		
+	};
+	_this.SubstanceNameIndex = {
+		
+	};
+	for(var i = 0; i < _this.Substances.length; i++) {
+		if(isDef(_this.SubstanceIDIndex[_this.Substances[i].IDName])) {
+			console.log("WARNING: Substance conflict detected! At least two substances both have the same IDName: \"" + _this.Substances[i].IDName + "\". Only the first such instance will be added to the ID index.");
+		} else {
+			_this.SubstanceIDIndex[_this.Substances[i].IDName] = i;
+			_this.SubstanceNameIndex[_this.Substances[i].DisplayName] = i;
+		}
+	}
+	
+	//Interaction format: Source substance, target substance, function called on match, optional parameters (for use in standard functions below).
+	//Functions are passed: the grid index where interaction is happening, the source type, the destination type, the source value, the destination value, and the delta time; followed by any optional parameters for the specific function.
+	var StandardInteractions = {
+		Annihilate: function(ind, typefrom, typeto, valfrom, valto, dt, iacargs) { //ratio, limit
+			var unitsAnnihilated = Math.min(Math.max(valfrom * iacargs[0] - valto, 0) * dt, iacargs[1]/iacargs[0]);
+			var unitsAnnihilating = unitsAnnihilated / iacargs[0];
+			if(unitsAnnihilated > 0) _this.Dirty[ind] = true;
+			_this.ValOoP[typefrom][ind] -= unitsAnnihilating;
+			_this.ValOoP[typeto][ind] -= unitsAnnihilated;
+		},
+		Merge: function(ind, typefrom, typeto, valfrom, valto, dt, iacargs) { //ratio, limit
+			var unitsAnnihilated = Math.min(Math.max(valfrom * iacargs[0] - valto, 0) * dt, iacargs[1]/iacargs[0]);
+			var unitsAnnihilating = unitsAnnihilated / iacargs[0];
+			if(unitsAnnihilated > 0) _this.Dirty[ind] = true;
+			_this.ValOoP[typefrom][ind] -= unitsAnnihilating;
+			_this.ValOoP[typeto][ind] += unitsAnnihilated;
+		},
+		InstantMerge: function(ind, typefrom, typeto, valfrom, valto, dt, iacargs) { //ratio, limit
+			_this.ValOoP[typefrom][ind] = 0;
+			_this.ValOoP[typeto][ind] += valfrom * iacargs[0];
+		},
+		Evaporate: function(ind, typefrom, typeto, valfrom, valto, dt, iacargs) {
+			//_this.ValOoP[typefrom][ind] = _this.ValBuf[typefrom][ind]*_this.Substances[typefrom].ConstEvap;
+			if(_this.ValOoP[typefrom][ind] > 0) _this.Dirty[ind] = true;
+			_this.ValOoP[typefrom][ind] *= _this.Substances[typefrom].ConstEvap;
+			if(_this.ValOoP[typefrom][ind] < _this.Substances[typefrom].EvapLimit || isNaN(_this.ValOoP[typefrom][ind])) _this.ValOoP[typefrom][ind] = 0;
+			if(_this.ValOoP[typefrom][ind] < 0 && _this.Substances[typefrom].IsClamped) {
+				_this.ValOoP[typefrom][ind] = 0;
+			}
+		}, Block: function(ind, typefrom, typeto, valfrom, valto, dt, iacargs) {
+			_this.ValBuf[typeto][ind] = 0;
+			_this.ValOoP[typeto][ind] = 0;
+		}
+	};
+	
+	_this.Interactions = [
+		[_this.SubstanceIDIndex["Dirt"], _this.SubstanceIDIndex["Creeper"], StandardInteractions.Block, []],
+		[_this.SubstanceIDIndex["Dirt"], _this.SubstanceIDIndex["Explosion"], StandardInteractions.Block, []],
+		[_this.SubstanceIDIndex["Explosion"], _this.SubstanceIDIndex["Creeper"], StandardInteractions.Annihilate, [10, 10000]],
+		[_this.SubstanceIDIndex["Shield"], _this.SubstanceIDIndex["Creeper"], StandardInteractions.Annihilate, [0.01, 1]],
+		[_this.SubstanceIDIndex["CrystalCreep"], _this.SubstanceIDIndex["Creeper"], StandardInteractions.Merge, [0.01, 100]],
+		[_this.SubstanceIDIndex["TNT"], _this.SubstanceIDIndex["Explosion"], StandardInteractions.InstantMerge, [1000]]
 	];
+	for(var i = 0; i < _this.Substances.length; i++) {
+		//if(_this.Substances[i].Class == "Liquid")
+			_this.Interactions.push([i, i, StandardInteractions.Evaporate, []]);
+	}
 	
 	_this.LayerSize = _this.Dimensions.y * _this.Dimensions.x
 	_this.TotalSize = _this.Dimensions.z * _this.LayerSize;
 	
 	_this.Dirty = new Uint8Array(_this.TotalSize);
 	//uint8array: maximum of 256 substance types
-	_this.Type = new Uint8Array(_this.TotalSize);
-	_this.Val = new Float32Array(_this.TotalSize);
-	_this.TypeOoP = new Uint8Array(_this.TotalSize);
-	_this.ValOoP = new Float32Array(_this.TotalSize);
+	_this.Val = []; //VALUE: Existing cells.
+	_this.ValBuf = []; //BUFFER: Intermediary for Stage 1 (propagation).
+	_this.ValOoP = []; //OUT-OF-PLACE: Intermediary for Stage 2 (interaction).
+	for(var i = 0; i < _this.Substances.length; i++) {
+		_this.Val.push(new Float32Array(_this.TotalSize));
+		_this.ValBuf.push(new Float32Array(_this.TotalSize));
+		_this.ValOoP.push(new Float32Array(_this.TotalSize));
+	}
 	_this.CoordsX = new Uint16Array(_this.TotalSize);
 	_this.CoordsY = new Uint16Array(_this.TotalSize);
 	_this.CoordsZ = new Uint16Array(_this.TotalSize);
@@ -303,31 +295,16 @@ WebCW.CreeperGame = function(iniargs) {
 	_this.UnsafeCode = new WebCW.UnsafeCode(_this);
 
 	//FUNCTIONS
-	_this.distribFluid = function(ifrm, ito, ifrac) {
-		if(_this.Val[ifrm] > 0 && ifrac > 0) {
+	_this.distribFluid = function(type, ifrm, ito, ifrac) {
+		if(ifrac > 0 && ifrac <= 1) {
 			_this.Dirty[ifrm] = 1; _this.Dirty[ito] = 1;
-			if(_this.ClassIndex[_this.Type[ito]] == "Yield") {
-				_this.TypeOoP[ito] = _this.Type[ifrm];
-				_this.ValOoP[ito] = _this.Val[ifrm] * ifrac;
-				_this.ValOoP[ifrm] -= _this.Val[ifrm] * ifrac;
-			} else if(_this.Type[ito] != _this.Type[ifrm]) { //TODO: better annihilation logic
-				_this.ValOoP[ito] -= _this.Val[ifrm] * ifrac;
-				_this.ValOoP[ifrm] -= _this.Val[ifrm] * ifrac;
-				if(_this.ValOoP[ito] < 0) {
-					_this.ValOoP[ifrm] -= _this.ValOoP[ito];
-					//_this.ValOoP[ito] = -_this.ValOoP[ito];
-					//_this.TypeOoP[ito] = _this.Type[ifrm];
-				}
-			} else {
-				_this.ValOoP[ito] += _this.Val[ifrm] * ifrac;
-				_this.ValOoP[ifrm] -= _this.Val[ifrm] * ifrac;
-			}
-		}
+			_this.ValBuf[type][ifrm] -= _this.Val[type][ifrm] * ifrac;
+			_this.ValBuf[type][ito] += _this.Val[type][ifrm] * ifrac;
+		} else if(ifrac > 1) console.log("WARNING: Transfer fraction passed to distribFluid was greater than 1 (would cause erratic behavior)!");
 	};
 	
-	_this.getBiasedPrsDif = function(ifrm, ito, iglb, iovr) {
-		if(_this.Type[ifrm] != _this.Type[ito] && _this.ClassIndex[_this.Type[ito]] != "Yield" && _this.Type[ito] != iovr) return 0;
-		return Math.max(_this.Val[ifrm] - _this.Val[ito] + _this.CreeperProps.globalPressure[iglb], 0);
+	_this.getBiasedPrsDif = function(type, ifrm, ito, iglb) {
+		return Math.max(_this.Val[type][ifrm] - _this.Val[type][ito] + _this.Substances[type].GlobalPressure[iglb], 0);
 	};
 	
 	_this.GetLine = function(pstart, pend, idebug) {
@@ -396,85 +373,62 @@ WebCW.CreeperGame = function(iniargs) {
 		for(var i = 0; i < _this.GameObjects.length; i++) {
 			_this.GameObjects[i].OnPreUpdate(gameTime, deltaTime, loopArgs);
 		}
-		//ONLY SET VALUES IN OoP ARRAY HERE
-		//LOOP 1
 		
-		var ind, ipx, imx, ipy, imy, ipz, imz, ibuf, totalExtPressure, extPressure, extpx, extmx, extpy, extmy, extpz, extmz, dstFrac, extPTot, ovrpx, ovrmx, ovrpy, ovrmy, ovrpz, ovrmz;
+		var ind, ipx, imx, ipy, imy, ipz, imz, ibuf, totalExtPressure, extPressure, extpx, extmx, extpy, extmy, extpz, extmz, dstFrac, extPTot, ovrpx, ovrmx, ovrpy, ovrmy, ovrpz, ovrmz, i;
 		
-		//NOTE: Only use Type/Val when reading, only use TypeOoP/ValOoP when writing! Exception is checking type while setting -- conflicts may arise in this case. This is TODO logic; for now, only supports Creeper. PROGRAMMER'S NOTE: Check fluid type instead of class, and perform interaction logic instead of/on top of pressure logic if no match?
+		//PHASE 1: Propagate liquids (and gases)
 		for(inda = 0; inda < _this.TotalSize; inda++) {
-			switch(_this.TypeIndex[_this.Type[inda]]) {
-				case "Creeper":
-					//if(_this.Val[inda] < _this.CreeperProps.spreadlimit) continue;
-					totalExtPressure = 0;
-					extPressure = 0;
-					
+			for(var i = 0; i < _this.Substances.length; i++) {
+				if(_this.Substances[i].Class == "Liquid") {
+					if(_this.Val[i][inda] < _this.Substances[i].SpreadLimit) continue;
+					//TODO: extend to full propagation rules, like interaction rules?
 					ipx = inda+1;
 					imx = inda-1;
 					ipy = inda+_this.Dimensions.x;
 					imy = inda-_this.Dimensions.x;
 					ipz = inda+_this.LayerSize;
 					imz = inda-_this.LayerSize;
-					
-					extpx = _this.BoundsPX[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, ipx, 0, 6);
-					extmx = _this.BoundsMX[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, imx, 3, 6);
-					extpy = _this.BoundsPY[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, ipy, 1, 6);
-					extmy = _this.BoundsMY[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, imy, 4, 6);
-					extpz = _this.BoundsPZ[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, ipz, 2, 6);
-					extmz = _this.BoundsMZ[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, imz, 5, 6);
-					
-					extPTot = extpx+extmx+extpy+extmy+extpz+extmz;
-					if(extPTot == 0) continue;
-					
-					//STAGE 2: Determine total amt to distribute
-					var fluidLeft = Math.max(_this.Val[inda] - extPTot, 0);
-					var fluidDstb = _this.Val[inda] - fluidLeft;
-					dstFrac = fluidDstb/extPTot / _this.Val[inda] * _this.CreeperProps.viscosity;
-					
-					//STAGE 3: Distribute
-					_this.distribFluid(inda, ipx, dstFrac*extpx);
-					_this.distribFluid(inda, imx, dstFrac*extmx);
-					_this.distribFluid(inda, ipy, dstFrac*extpy);
-					_this.distribFluid(inda, imy, dstFrac*extmy);
-					_this.distribFluid(inda, ipz, dstFrac*extpz);
-					_this.distribFluid(inda, imz, dstFrac*extmz);
-					break;
-				case "Explosion":
 					totalExtPressure = 0;
 					extPressure = 0;
-					
-					ipx = inda+1;
-					imx = inda-1;
-					ipy = inda+_this.Dimensions.x;
-					imy = inda-_this.Dimensions.x;
-					ipz = inda+_this.LayerSize;
-					imz = inda-_this.LayerSize;
-					
-					extpx = _this.BoundsPX[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, ipx, 0, 3);
-					extmx = _this.BoundsMX[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, imx, 3, 3);
-					extpy = _this.BoundsPY[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, ipy, 1, 3);
-					extmy = _this.BoundsMY[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, imy, 4, 3);
-					extpz = _this.BoundsPZ[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, ipz, 2, 3);
-					extmz = _this.BoundsMZ[inda]==1 ? 0 : _this.getBiasedPrsDif(inda, imz, 5, 3);
+						
+					extpx = _this.BoundsPX[inda]==1 ? 0 : _this.getBiasedPrsDif(i, inda, ipx, 0);
+					extmx = _this.BoundsMX[inda]==1 ? 0 : _this.getBiasedPrsDif(i, inda, imx, 3);
+					extpy = _this.BoundsPY[inda]==1 ? 0 : _this.getBiasedPrsDif(i, inda, ipy, 1);
+					extmy = _this.BoundsMY[inda]==1 ? 0 : _this.getBiasedPrsDif(i, inda, imy, 4);
+					extpz = _this.BoundsPZ[inda]==1 ? 0 : _this.getBiasedPrsDif(i, inda, ipz, 2);
+					extmz = _this.BoundsMZ[inda]==1 ? 0 : _this.getBiasedPrsDif(i, inda, imz, 5);
 					
 					extPTot = extpx+extmx+extpy+extmy+extpz+extmz;
 					if(extPTot == 0) continue;
 					
-					//STAGE 2: Determine total amt to distribute
-					var fluidLeft = Math.max(_this.Val[inda] - extPTot, 0);
-					var fluidDstb = _this.Val[inda] - fluidLeft;
-					dstFrac = fluidDstb / extPTot / _this.Val[inda] * 1;
-					
-					//STAGE 3: Distribute
-					_this.distribFluid(inda, ipx, dstFrac*extpx);
-					_this.distribFluid(inda, imx, dstFrac*extmx);
-					_this.distribFluid(inda, ipy, dstFrac*extpy);
-					_this.distribFluid(inda, imy, dstFrac*extmy);
-					_this.distribFluid(inda, ipz, dstFrac*extpz);
-					_this.distribFluid(inda, imz, dstFrac*extmz);
-					break;
-				default:
-					break;
+					var fluidLeft = Math.max(_this.Val[i][inda] - extPTot, 0);
+					var fluidDstb = _this.Val[i][inda] - fluidLeft;
+					dstFrac = fluidDstb/extPTot / _this.Val[i][inda] * _this.Substances[i].SpreadRate * deltaTime;
+					_this.Dirty[inda] = 1; 
+					_this.distribFluid(i, inda, ipx, dstFrac*extpx);
+					_this.distribFluid(i, inda, imx, dstFrac*extmx);
+					_this.distribFluid(i, inda, ipy, dstFrac*extpy);
+					_this.distribFluid(i, inda, imy, dstFrac*extmy);
+					_this.distribFluid(i, inda, ipz, dstFrac*extpz);
+					_this.distribFluid(i, inda, imz, dstFrac*extmz);
+				}
+			}
+		}
+		
+		//PHASE 2: Interaction
+		for(inda = 0; inda < _this.TotalSize; inda++) {
+			for(var i = 0; i < _this.Substances.length; i++) {
+				_this.ValOoP[i][inda] = _this.ValBuf[i][inda];
+			}
+			for(var i = 0; i < _this.Interactions.length; i++) {
+				var vfrom = _this.ValBuf[_this.Interactions[i][0]][inda];
+				var vto = _this.ValBuf[_this.Interactions[i][1]][inda];
+				if(vfrom != 0 && vto != 0) _this.Interactions[i][2](
+					inda,
+					_this.Interactions[i][0], _this.Interactions[i][1],
+					vfrom, vto,
+					deltaTime,
+					_this.Interactions[i][3]);
 			}
 		}
 		
@@ -482,22 +436,16 @@ WebCW.CreeperGame = function(iniargs) {
 			_this.GameObjects[i].OnPostUpdate(gameTime, deltaTime, loopArgs);
 		}
 		
+		//PHASE 3: Reset buffers
 		for(var indb = 0; indb < _this.TotalSize; indb++) {
-			if(_this.TypeOoP[indb] == 6) _this.ValOoP[indb] /= 1.1;
-			
-			if(_this.ClassIndex[_this.TypeOoP[indb]] == "Liquid" && _this.ValOoP[indb] < _this.CreeperProps.evaplimit) {
-				_this.TypeOoP[indb] = 0;
-				_this.ValOoP[indb] = 0;
-				_this.Dirty[indb] = 1;
-			}
-			
 			if(_this.Dirty[indb] == 1) {
 				_this.UnsafeCode.VoxelRenderer.setVoxelDirty(indb);
 				_this.Dirty[indb] = 0;
 			}
-			
-			_this.Type[indb] = _this.TypeOoP[indb];
-			_this.Val[indb] = _this.ValOoP[indb];
+			for(var i = 0; i < _this.Substances.length; i++) {
+				_this.Val[i][indb] = _this.ValOoP[i][indb];
+				_this.ValBuf[i][indb] = _this.ValOoP[i][indb];
+			}
 		}
 	};
 	
@@ -536,11 +484,17 @@ WebCW.CreeperGame = function(iniargs) {
 				_this.CoordsX[gbind] = i;
 				_this.CoordsY[gbind] = j;
 				_this.CoordsZ[gbind] = k;
-				_this.Type[gbind] = (k == 0 || (k < 5 && (i == 15 || j == 15)) || (k == 5 && i < 15 && j < 15)) ? 2 : 0;
-				_this.Val[gbind] = (_this.Type[gbind] == 2) ? 1 : 0;
-				
-				_this.ValOoP[gbind] = _this.Val[gbind];
-				_this.TypeOoP[gbind] = _this.Type[gbind];
+				for(var mm = 0; mm < _this.Substances.length; mm++) {
+					if(mm == _this.SubstanceIDIndex["Dirt"] && (k == 0 || (k < 5 && (i == 15 || j == 15)) || (k == 5 && i < 15 && j < 15))) {
+						_this.Val[mm][gbind] = 1;
+						_this.ValOoP[mm][gbind] = 1;
+						_this.ValBuf[mm][gbind] = 1;
+					} else {
+						_this.Val[mm][gbind] = 0;
+						_this.ValOoP[mm][gbind] = 0;
+						_this.ValBuf[mm][gbind] = 0;
+					}
+				}
 				
 				_this.BoundsMX[gbind] = (i == 0);
 				_this.BoundsPX[gbind] = (i == (_this.Dimensions.x - 1));
