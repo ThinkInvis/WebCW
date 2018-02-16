@@ -45,7 +45,7 @@ WebCW.CreeperGame.Modules.Gfx.WebGLRenderer = function(args) {
 			
 			document.getElementById("DebugText").innerHTML = ["WebCW Pre-Alpha (name also WIP)",
 			"By ThinkInvisible/Inspired by KnuckleCracker's <em>Creeper World</em>",
-			"<a href=\"https://github.com/ThinkInvis/WebCW\">Check out my source on GitHub!</a>",
+			"<a href=\"https://github.com/ThinkInvis/WebCW\">Check out my source on GitHub!</a>|CONTROLS: LMB: Look, RMB: Pan, MWheel/MMB: Zoom",
 			"D: Delete Terrain, T: Add Terrain, E: Explosion, C: Creeper, N: Nuke, V: CreepNuke",
 				"DEBUG: " + _this.Loop.SimTime.toFixed(3) + "s (" + _this.Loop.Accum.toFixed(3) + "/"+_this.Loop.RealStep.toFixed(3)+"s in accum)" + ((TicksOverdue > 4) ? ("<span class=\"errText\">WARNING! " + TicksOverdue + " TICKS BEHIND</span>") : (""))
 			].join("<br />");
