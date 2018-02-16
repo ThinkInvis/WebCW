@@ -8,8 +8,10 @@ WebCW.CreeperGame.Modules.Gfx.WebGLRenderer = function(args) {
 		GlobalGeoms: {},
 		GlobalObjects: {},
 		DrawCalls: [],
-		UpdateCalls: []
+		UpdateCalls: [],
+		addStats: false
 	};
+	
 	_this.DftGenArgs = {
 		Loop: function(obj, args) {
 			return new FixedTimestepLoop({Callback: _this.Update, FrameCallback: _this.Draw});
@@ -46,14 +48,18 @@ WebCW.CreeperGame.Modules.Gfx.WebGLRenderer = function(args) {
 			document.getElementById("DebugText").innerHTML = ["WebCW Pre-Alpha (name also WIP)",
 			"By ThinkInvisible/Inspired by KnuckleCracker's <em>Creeper World</em>",
 			"<a href=\"https://github.com/ThinkInvis/WebCW\">Check out my source on GitHub!</a>|CONTROLS: LMB: Look, RMB: Pan, MWheel/MMB: Zoom",
-			"D: Delete Terrain, T: Add Terrain, E: Explosion, C: Creeper, N: Nuke, V: CreepNuke",
+			"D: Delete Terrain, T: Use Pencil",
 				"DEBUG: " + _this.Loop.SimTime.toFixed(3) + "s (" + _this.Loop.Accum.toFixed(3) + "/"+_this.Loop.RealStep.toFixed(3)+"s in accum)" + ((TicksOverdue > 4) ? ("<span class=\"errText\">WARNING! " + TicksOverdue + " TICKS BEHIND</span>") : (""))
 			].join("<br />");
+			if(_this.RndNoInst) {
+				document.getElementById("DebugText").innerHTML += "<br />span class=\"errText\">ERROR: Your browser, or your computer, does not support GPU-instanced geometry. You will not be able to view graphics on this page without this feature.</span>";
+			}
 		}
 		for(var i = 0; i < _this.DrawCalls.length; i++) {
 			_this.DrawCalls[i](_this, t, dt, lpargs);
 		}
 		if(isDef(_this.CurrentCamera)) _this.Context.render(_this.Scene, _this.CurrentCamera);
+		if(_this.addStats) _this.stats.update();
 	};
 	_this.Update = function(t, dt, lpargs) {
 		for(var i = 0; i < _this.UpdateCalls.length; i++) {
@@ -61,4 +67,14 @@ WebCW.CreeperGame.Modules.Gfx.WebGLRenderer = function(args) {
 		}
 	};
 	initArgs(_this, args);
+	
+	if(_this.addStats) {
+		_this.stats = new Stats();
+		_this.Container.appendChild(_this.stats.dom);
+	}
+	
+	
+	if (_this.Context.extensions.get( 'ANGLE_instanced_arrays' ) === false ) {
+		_this.RndNoInst = true;
+	}
 };

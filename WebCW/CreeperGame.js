@@ -74,6 +74,7 @@ WebCW.UnsafeCode = function(attachto) {
 	};
 	_this.MouseBtnIndices = [[1,"LeftMouseBtn"],[2,"RightMouseBtn"],[4,"MiddleMouseBtn"],[8,"FwdMouseBtn"],[16,"BackMouseBtn"]];
 	_this.onDocumentMouseDown = function(event) {
+		//NOTE: this and mouseup aren't working quite right. Event propagation being stopped by THREE.js TrackballControls?
 		for(var i = 0; i < _this.MouseBtnIndices.length; i++) {
 			if((event.buttons & _this.MouseBtnIndices[i][0]) == _this.MouseBtnIndices[i][0]) {
 				var btn = _this.MouseBtnIndices[i][1];
@@ -128,45 +129,33 @@ WebCW.UnsafeCode = function(attachto) {
 		}
 	});
 	
+	//dat.GUI debugger tools
+	_this.gui = new dat.GUI({width: 300});
+	var folderAdder = _this.gui.addFolder('Pencil');
+	var params = {
+		pencilAmt: 100,
+		pencilType: 3
+	};
+	folderAdder.add(params, 'pencilAmt', 0, 1000000);
+	folderAdder.add(params, 'pencilType', _this.Game.TypeIndexI);
+	folderAdder.open();
+	
 	_this.onKeyDown = function(rndr, key, t, dt, args) {
-		console.log("KEYDN: " + key);
 		if(isDef(_this.LastRaycastResult[0])) {
 			var htind = _this.LastRaycastResult[0].object.GdIndx;
 			var upind = _this.Game.Vec3ToIndex(new THREE.Vector3().copy(_this.LastRaycastResult[0].face.normal).add(_this.Game.IndexToVec3(_this.LastRaycastResult[0].object.GdIndx)));
 			if(key == 68) {
-				//GdIndx
 				_this.Game.ValOoP[htind] = 0;
 				_this.Game.TypeOoP[htind] = 0;
 				_this.Game.Dirty[htind] = 1;
 			} else if(key == 84) {
-				_this.Game.ValOoP[upind] = 1;
-				_this.Game.TypeOoP[upind] = 2;
+				_this.Game.ValOoP[upind] = params.pencilAmt;
+				_this.Game.TypeOoP[upind] = params.pencilType;
 				_this.Game.Dirty[upind] = 1;
-			} else if(key == 69) {
-				_this.Game.ValOoP[upind] = 100;
-				_this.Game.TypeOoP[upind] = 6;
-				_this.Game.Dirty[upind] = 1;
-				
-			} else if(key == 67) {
-				_this.Game.ValOoP[upind] = 100;
-				_this.Game.TypeOoP[upind] = 3;
-				_this.Game.Dirty[upind] = 1;
-				
-			} else if(key == 78) {
-				_this.Game.ValOoP[upind] = 1000000000;
-				_this.Game.TypeOoP[upind] = 6;
-				_this.Game.Dirty[upind] = 1;
-				
-			} else if(key == 86) {
-				_this.Game.ValOoP[upind] = 10000;
-				_this.Game.TypeOoP[upind] = 3;
-				_this.Game.Dirty[upind] = 1;
-				
 			}
 		}
 	};
 	_this.onKeyUp = function(rndr, key, t, dt, args) {
-		console.log("KEYUP: " + key);
 	};
 	_this.onKeyHold = function(rndr, key, t, dt, args) {
 		
@@ -200,7 +189,6 @@ WebCW.CreeperGame = function(iniargs) {
 	];
 	initArgs(_this, iniargs);
 	
-	_this.UnsafeCode = new WebCW.UnsafeCode(_this);
 	
 	//PUBLIC VARS
 	_this.GameObjects = [];
@@ -217,6 +205,15 @@ WebCW.CreeperGame = function(iniargs) {
 		"Anticreep",
 		"Explosion"
 	];
+	_this.TypeIndexI = {
+		"Atmosphere": 0,
+		"WorldBoundary": 1,
+		"Dirt": 2,
+		"Creeper": 3,
+		"Stone": 4,
+		"Anticreep": 5,
+		"Explosion": 6
+	};
 	_this.ClassIndex = [
 		"Yield",
 		"Terrain",
@@ -303,6 +300,7 @@ WebCW.CreeperGame = function(iniargs) {
 	_this.BoundsMZ = new Uint8Array(_this.TotalSize);
 	
 
+	_this.UnsafeCode = new WebCW.UnsafeCode(_this);
 
 	//FUNCTIONS
 	_this.distribFluid = function(ifrm, ito, ifrac) {

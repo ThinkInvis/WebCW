@@ -4,7 +4,9 @@ var GlobalSettings = {
 var TestGame;
 
 var CWTestInit = function() {
-	TestGame = new WebCW.CreeperGame({Dimensions: new THREE.Vector3(32, 32, 16), Renderer: new WebCW.CreeperGame.Modules.Gfx.WebGLRenderer({Container: document.getElementById("container")})});
+	if(!Detector.webgl) Detector.addGetWebGLMessage();
+	
+	TestGame = new WebCW.CreeperGame({Dimensions: new THREE.Vector3(32, 32, 16), Renderer: new WebCW.CreeperGame.Modules.Gfx.WebGLRenderer({Container: document.getElementById("container"), addStats: true})});
 	TestGame.GameObjects.push(new WebCW.CreeperGame.Modules.Units.Emitter({Game: TestGame, Position: new THREE.Vector3(1, 1, 1), FlowRate: 200}));
 	TestGame.GameObjects.push(new WebCW.CreeperGame.Modules.Units.Emitter({Game: TestGame, Position: new THREE.Vector3(1, 1, 6), FlowRate: 150}));
 	TestGame.GameObjects.push(new WebCW.CreeperGame.Modules.Units.Turret({Game: TestGame, Position: new THREE.Vector3(10, 10, 8)}));
