@@ -248,15 +248,10 @@ WebCW.CreeperGame = function(iniargs) {
 			if(_this.ValOoP[typefrom][ind] < 0 && _this.Substances[typefrom].IsClamped) {
 				_this.ValOoP[typefrom][ind] = 0;
 			}
-		}, Block: function(ind, typefrom, typeto, valfrom, valto, dt, iacargs) {
-			_this.ValBuf[typeto][ind] = 0;
-			_this.ValOoP[typeto][ind] = 0;
 		}
 	};
 	
 	_this.Interactions = [
-		[_this.SubstanceIDIndex["Dirt"], _this.SubstanceIDIndex["Creeper"], StandardInteractions.Block, []],
-		[_this.SubstanceIDIndex["Dirt"], _this.SubstanceIDIndex["Explosion"], StandardInteractions.Block, []],
 		[_this.SubstanceIDIndex["Explosion"], _this.SubstanceIDIndex["Creeper"], StandardInteractions.Annihilate, [10, 10000]],
 		[_this.SubstanceIDIndex["Shield"], _this.SubstanceIDIndex["Creeper"], StandardInteractions.Annihilate, [0.01, 1]],
 		[_this.SubstanceIDIndex["CrystalCreep"], _this.SubstanceIDIndex["Creeper"], StandardInteractions.Merge, [0.01, 100]],
@@ -273,6 +268,7 @@ WebCW.CreeperGame = function(iniargs) {
 	_this.Dirty = new Uint8Array(_this.TotalSize);
 	//uint8array: maximum of 256 substance types
 	_this.Val = []; //VALUE: Existing cells.
+	_this.ContainsSolid = new Float32Array(_this.TotalSize);
 	_this.ValBuf = []; //BUFFER: Intermediary for Stage 1 (propagation).
 	_this.ValOoP = []; //OUT-OF-PLACE: Intermediary for Stage 2 (interaction).
 	for(var i = 0; i < _this.Substances.length; i++) {
@@ -304,6 +300,7 @@ WebCW.CreeperGame = function(iniargs) {
 	};
 	
 	_this.getBiasedPrsDif = function(type, ifrm, ito, iglb) {
+		if(_this.ContainsSolid[ito]) return 0;
 		return Math.max(_this.Val[type][ifrm] - _this.Val[type][ito] + _this.Substances[type].GlobalPressure[iglb], 0);
 	};
 	
@@ -442,9 +439,12 @@ WebCW.CreeperGame = function(iniargs) {
 				_this.UnsafeCode.VoxelRenderer.setVoxelDirty(indb);
 				_this.Dirty[indb] = 0;
 			}
+			_this.ContainsSolid[indb] = 0;
 			for(var i = 0; i < _this.Substances.length; i++) {
 				_this.Val[i][indb] = _this.ValOoP[i][indb];
 				_this.ValBuf[i][indb] = _this.ValOoP[i][indb];
+				if(_this.Substances[i].IsSolid && _this.Val[i][indb] > 0)
+						_this.ContainsSolid[indb] = 1;
 			}
 		}
 	};
@@ -489,10 +489,12 @@ WebCW.CreeperGame = function(iniargs) {
 						_this.Val[mm][gbind] = 1;
 						_this.ValOoP[mm][gbind] = 1;
 						_this.ValBuf[mm][gbind] = 1;
+						_this.ContainsSolid[gbind] = 1;
 					} else {
 						_this.Val[mm][gbind] = 0;
 						_this.ValOoP[mm][gbind] = 0;
 						_this.ValBuf[mm][gbind] = 0;
+						_this.ContainsSolid[gbind] = 0;
 					}
 				}
 				
