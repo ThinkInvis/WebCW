@@ -52,7 +52,7 @@ WebCW.CreeperGame.Modules.Gfx.WebGLRenderer = function(args) {
 				"DEBUG: " + _this.Loop.SimTime.toFixed(3) + "s (" + _this.Loop.Accum.toFixed(3) + "/"+_this.Loop.RealStep.toFixed(3)+"s in accum)" + ((TicksOverdue > 4) ? ("<span class=\"errText\">WARNING! " + TicksOverdue + " TICKS BEHIND</span>") : (""))
 			].join("<br />");
 			if(_this.RndNoInst) {
-				document.getElementById("DebugText").innerHTML += "<br />span class=\"errText\">ERROR: Your browser, or your computer, does not support GPU-instanced geometry. You will not be able to view graphics on this page without this feature.</span>";
+				document.getElementById("DebugText").innerHTML += "<br /><span class=\"errText\">ERROR: Your browser, or your computer, does not support GPU-instanced geometry. You will not be able to view graphics on this page without this feature.</span>";
 			}
 		}
 		for(var i = 0; i < _this.DrawCalls.length; i++) {
