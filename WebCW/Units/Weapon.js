@@ -3,7 +3,7 @@ if(isUndef(WebCW.CreeperGame.Modules.Units)) WebCW.CreeperGame.Modules.Units = {
 WebCW.CreeperGame.Modules.Units.Turret = function(args) {
 	var _this = this;
 	_this.RequiredArgs = ["Game", "Position"];
-	_this.OptionalArgs = {
+	_this.DefaultArgs = {
 		Range: 8,
 		fireTimeout: 0.5,
 		antiPressure: 150
