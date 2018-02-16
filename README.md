@@ -8,4 +8,3 @@ Known major issues/todo (2/15/2018):
 - Various other placeholders, in-place tests, etc. that need to be cleaned up, ESPECIALLY substance interaction and properties
 - Debug interaction controls (e.g. place terrain) wrap around to weird coordinates instead of clamping if used on the edges of the map
 - Health/power system for structures
-- Update and add existing personal todo document to this repo
