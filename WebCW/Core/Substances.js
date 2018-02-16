@@ -1,5 +1,5 @@
 WebCW.CreeperGame.Substance = function(args) {
-	var_this = this;
+	var _this = this;
 	_this.OptionalArgs = {
 		Interactions: {},
 		DisplayName: _this.IDName,
@@ -7,7 +7,6 @@ WebCW.CreeperGame.Substance = function(args) {
 	};
 	_this.RequiredArgs = ["IDName", "Class", "Density"];
 	initArgs(_this, args);
-	
 	
 	_this.checkInteractions = function(cell, deltaTime) {
 		var RetProps = {};

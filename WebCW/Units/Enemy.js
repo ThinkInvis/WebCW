@@ -13,11 +13,11 @@ WebCW.CreeperGame.Modules.Units.Emitter = function(args) {
 	_this.OnPreUpdate = function(gt,dt,larg) {
 		if(_this.Game.TypeOoP[_this.PosInd] != 3) _this.Game.ValOoP[_this.PosInd] = 0;
 		if(_this.Game.Type[_this.PosInd] != 3) _this.Game.Val[_this.PosInd] = 0;
+		//TODO: create generalized interaction functions in CreeperGame
 		_this.Game.TypeOoP[_this.PosInd] = 3;
 		_this.Game.ValOoP[_this.PosInd] += _this.FlowRate * dt;
 		_this.Game.Type[_this.PosInd] = 3;
 		_this.Game.Val[_this.PosInd] += _this.FlowRate * dt;
-		//_this.Game.ManualAddFluid(_this.Position, "creeper", "fluid", _this.FlowRate * dt);
 	};
 	_this.OnPostUpdate = function(gt,dt,larg) {
 		

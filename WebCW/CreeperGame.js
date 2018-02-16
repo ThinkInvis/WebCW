@@ -182,7 +182,6 @@ WebCW.CreeperGame = function(iniargs) {
 	_this.DefaultArgs = {
 		CreeperProps: {
 			viscosity: 0.3,
-			//viscosity: 100,
 			evaplimit: 0.02,
 			spreadlimit: 1,
 			globalPressure: [
@@ -283,19 +282,6 @@ WebCW.CreeperGame = function(iniargs) {
 		[3]
 	];
 	
-	/*_this.CeAtData = new CellAuto3D({GdSize: _this.Dimensions, InitialType: function(pos) {
-		if(pos[2] == 0 || (pos[2] < 5 && (pos[1] == 15 || pos[0] == 15)) || (pos[2] == 5 && pos[1] < 15 && pos[0] < 15)) {
-			return 2;
-		}
-		return 0;
-	}, InitialVal: function(pos) {
-		if(pos[2] == 0 || (pos[2] < 5 && (pos[1] == 15 || pos[0] == 15)) || (pos[2] == 5 && pos[1] < 15 && pos[0] < 15)) return 1;
-		return 0;
-	},
-		BoundaryType: function(pos) {return 1;},
-		BoundaryVal: function(pos) {return 1;}}
-	);*/
-	
 	_this.LayerSize = _this.Dimensions.y * _this.Dimensions.x
 	_this.TotalSize = _this.Dimensions.z * _this.LayerSize;
 	
@@ -319,7 +305,6 @@ WebCW.CreeperGame = function(iniargs) {
 
 
 	//FUNCTIONS
-	
 	_this.distribFluid = function(ifrm, ito, ifrac) {
 		if(_this.Val[ifrm] > 0 && ifrac > 0) {
 			_this.Dirty[ifrm] = 1; _this.Dirty[ito] = 1;
@@ -346,8 +331,6 @@ WebCW.CreeperGame = function(iniargs) {
 		if(_this.Type[ifrm] != _this.Type[ito] && _this.ClassIndex[_this.Type[ito]] != "Yield" && _this.Type[ito] != iovr) return 0;
 		return Math.max(_this.Val[ifrm] - _this.Val[ito] + _this.CreeperProps.globalPressure[iglb], 0);
 	};
-	
-	
 	
 	_this.GetLine = function(pstart, pend, idebug) {
 		var ppos = new THREE.Vector3().copy(pstart).floor();
@@ -408,41 +391,7 @@ WebCW.CreeperGame = function(iniargs) {
 		return pindex;
 	};
 	
-	
-	//_this.Raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(), 16, 1);
-	_this.RaycastSearch = function(pos, angdir, range) {
-		/*_this.Raycaster.far = range;
-		//_this.Raycaster.set(pos, new THREE.Vector3(GLOBALS.));
-		_this.Raycaster.set(pos, angdir);
-		var clds = _this.Raycaster.intersectObjects(_this.Colliders, false);
-		var cldsr = [];
-		for(var i = 0; i < clds.length; i++) {
-			var cldspos = _this.Vec3ToIndex(clds[i].object.position);
-			cldsr.push([_this.Type[cldspos], _this.Val[cldspos], cldspos, clds[i].object.position]);
-		}
-		return cldsr;*/
-		var dtpos = new THREE.Vector3().copy(angdir);
-		var ndtpos = new THREE.Vector3().copy(dtpos).multiplyScalar(range);
-		var stpos = new THREE.Vector3().copy(pos);
-		var edpos = new THREE.Vector3().copy(pos).add(ndtpos);
-		var ccpos = new THREE.Vector3().copy(pos);
-		var cfpos = new THREE.Vector3().copy(pos).floor();
-		var cdpos = new THREE.Vector3();
-		var cldsr = [];
-		for(var i = 0; i < range; i++) {
-			cdpos.copy(cfpos);
-			ccpos.add(dtpos);
-			cfpos.copy(ccpos).floor();
-			if(!cfpos.equals(cdpos)) {
-				var cfind = _this.Vec3ToIndex(cfpos);
-				cldsr.push([_this.Type[cfind], _this.Val[cfind], cfind, new THREE.Vector3().copy(cfpos)]);
-			}
-		};
-		return cldsr;
-	};
-	
 	_this.Update = function(renderer, gameTime, deltaTime, loopArgs) {
-		//console.log("=== BEGIN UPDATE LOOP AT T:" + gameTime + "S ===");
 		_this.GameTime = gameTime;
 		_this.LastDelta = deltaTime;
 		_this.LastLoopArgs = loopArgs;
@@ -454,11 +403,8 @@ WebCW.CreeperGame = function(iniargs) {
 		
 		var ind, ipx, imx, ipy, imy, ipz, imz, ibuf, totalExtPressure, extPressure, extpx, extmx, extpy, extmy, extpz, extmz, dstFrac, extPTot, ovrpx, ovrmx, ovrpy, ovrmy, ovrpz, ovrmz;
 		
-		//ind = 0; ipx = 0; imx = -2; ipy = _this.Dimensions.x-1; imy = -_this.Dimensions.x-1; ipz = _this.LayerSize-1; imz = -_this.LayerSize-1;
 		//NOTE: Only use Type/Val when reading, only use TypeOoP/ValOoP when writing! Exception is checking type while setting -- conflicts may arise in this case. This is TODO logic; for now, only supports Creeper. PROGRAMMER'S NOTE: Check fluid type instead of class, and perform interaction logic instead of/on top of pressure logic if no match?
 		for(inda = 0; inda < _this.TotalSize; inda++) {
-			//ipx++; imx++; ipy++; imy++; ipz++; imz++;
-			//if(_this.ClassIndex[_this.Type[inda]] != "Liquid") continue;
 			switch(_this.TypeIndex[_this.Type[inda]]) {
 				case "Creeper":
 					//if(_this.Val[inda] < _this.CreeperProps.spreadlimit) continue;
@@ -552,13 +498,9 @@ WebCW.CreeperGame = function(iniargs) {
 				_this.Dirty[indb] = 0;
 			}
 			
-			//callbackClone(indb, _this.Type[indb], _this.Val[indb], _this.Dirty[indb] == 1);
 			_this.Type[indb] = _this.TypeOoP[indb];
 			_this.Val[indb] = _this.ValOoP[indb];
 		}
-		
-		//console.log("=== END UPDATE LOOP ===");
-		//console.log(" ");
 	};
 	
 	_this.Draw = function() {
