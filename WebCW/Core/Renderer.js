@@ -9,6 +9,7 @@ WebCW.Modules.Gfx.WebGLRenderer = function(args) {
 		GlobalObjects: {},
 		DrawCalls: [],
 		UpdateCalls: [],
+		ResizeCalls: [],
 		addStats: false
 	};
 	
@@ -38,6 +39,9 @@ WebCW.Modules.Gfx.WebGLRenderer = function(args) {
 				_this.ViewportHeight = _this.Container.offsetHeight;
 				_this.ViewportSize.set(_this.ViewportWidth, _this.ViewportHeight);
 				_this.Context.setSize(_this.ViewportWidth, _this.ViewportHeight);
+				for(var i = 0; i < _this.ResizeCalls.length; i++) {
+					_this.ResizeCalls[i](_this, _this.ViewportWidth, _this.ViewportHeight);
+				}
 			});
 			return trnd;
 		}
@@ -56,6 +60,9 @@ WebCW.Modules.Gfx.WebGLRenderer = function(args) {
 			].join("<br />");
 			if(_this.RndNoInst) {
 				document.getElementById("DebugText").innerHTML += "<br /><span class=\"errText\">ERROR: Your browser, or your computer, does not support GPU-instanced geometry. You will not be able to view graphics on this page without this feature.</span>";
+			}
+			if(_this.RndNoDep) {
+				document.getElementById("DebugText").innerHTML += "<br /><span class=\"errText\">ERROR: Your browser, or your computer, does not support WebGL depth textures. You will not be able to view graphics on this page without this feature.</span>";
 			}
 		}
 		for(var i = 0; i < _this.DrawCalls.length; i++) {
@@ -80,6 +87,8 @@ WebCW.Modules.Gfx.WebGLRenderer = function(args) {
 	if (_this.Context.extensions.get( 'ANGLE_instanced_arrays' ) === false ) {
 		_this.RndNoInst = true;
 	}
-	
+	if ( !_this.Context.extensions.get( 'WEBGL_depth_texture' ) ) {
+		_this.RndNoDep = true;
+	}
 	_this.DoRender = true;
 };

@@ -173,7 +173,47 @@ WebCW.UnsafeCode = function(attachto) {
 		
 	};
 	
-	
+	_this.setupPostproc = function() {
+		//Postprocessing
+		// Create a multi render target with Float buffers
+		_this.DepthBuf = new THREE.WebGLRenderTarget( _this.Game.Renderer.ViewportWidth, _this.Game.Renderer.ViewportHeight );
+		_this.DepthBuf.texture.format = THREE.RGBFormat;
+		_this.DepthBuf.texture.minFilter = THREE.NearestFilter;
+		_this.DepthBuf.texture.magFilter = THREE.NearestFilter;
+		_this.DepthBuf.texture.generateMipmaps = false;
+		_this.DepthBuf.stencilBuffer = false;
+		_this.DepthBuf.depthBuffer = true;
+		_this.DepthBuf.depthTexture = new THREE.DepthTexture();
+		_this.DepthBuf.depthTexture.type = THREE.UnsignedShortType;
+		
+		
+		// Setup post processing stage
+		_this.postCamera = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 1 );
+		_this.postMaterial = new THREE.ShaderMaterial( {
+			vertexShader: document.querySelector( '#post-vert' ).textContent.trim(),
+			fragmentShader: document.querySelector( '#post-frag' ).textContent.trim(),
+			uniforms: {
+				cameraNear: { value: _this.Game.Renderer.CurrentCamera.near },
+				cameraFar:  { value: _this.Game.Renderer.CurrentCamera.far },
+				tDiffuse:   { value: _this.DepthBuf.texture },
+				tDepth:     { value: _this.DepthBuf.depthTexture },
+				resolution:	{ value: _this.Game.Renderer.ViewportSize}
+			}
+		});
+		_this.postPlane = new THREE.PlaneBufferGeometry( 2, 2 );
+		_this.postQuad = new THREE.Mesh( _this.postPlane, _this.postMaterial );
+		_this.postScene = new THREE.Scene();
+		_this.postScene.add( _this.postQuad );
+		
+		_this.Game.Renderer.ResizeCalls.push(function(rndr,wid,hei) {
+			var dpr = rndr.Context.getPixelRatio();
+			_this.DepthBuf.setSize(wid*dpr, hei*dpr);
+		});
+		_this.Game.Renderer.DrawCalls.push(function(rndr,t,dt,loopargs) {
+			_this.Game.Renderer.Context.render(_this.Game.Renderer.Scene, _this.Game.Renderer.CurrentCamera, _this.DepthBuf);
+			_this.Game.Renderer.Context.render(_this.postScene, _this.postCamera);
+		});
+	};
 };
 
 WebCW.CreeperGame = function(iniargs) {
@@ -522,7 +562,6 @@ WebCW.CreeperGame = function(iniargs) {
 	_this.Renderer.UpdateCalls.push(this.Update);
 	_this.Renderer.UpdateCalls.push(this.UnsafeCode.VoxelRenderer.updateChunks);
 	_this.Renderer.DrawCalls.push(this.Draw);
-	
 };
 
 WebCW.Modules = {};

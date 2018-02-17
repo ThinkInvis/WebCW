@@ -15,6 +15,10 @@ var CWTestInit = function() {
 	TestGame.ModuleObjects.push(new WebCW.Modules.Control.TrackballCam({Game: TestGame}));
 	TestGame.ModuleObjects[0].makeCurrent();
 	
+	
+	TestGame.Renderer.DoRender = false;
+	TestGame.UnsafeCode.setupPostproc();
+	
 	TestGame.Renderer.Loop.Begin();
 };
 

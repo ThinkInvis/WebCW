@@ -4,31 +4,102 @@
 		<meta charset="utf-8"/>
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<title>WebCW Pre-Alpha</title>
+		<script id="post-vert" type="x-shader/x-vertex">
+			precision highp float;
+
+			varying vec2 vUv;
+
+			void main() {
+				vUv = uv;
+				gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+			}
+		
+		</script>
+
+		<script id="post-frag" type="x-shader/x-fragment">
+			#include <packing>
+			precision highp float;
+			
+			varying vec2 vUv;
+			uniform sampler2D tDiffuse;
+			uniform sampler2D tDepth;
+			uniform float cameraNear;
+			uniform float cameraFar;
+			uniform vec2 resolution;
+
+			float readDepth (sampler2D depthSampler, vec2 coord) {
+				float fragCoordZ = texture2D(depthSampler, coord).x;
+				float viewZ = perspectiveDepthToViewZ( fragCoordZ, cameraNear, cameraFar );
+				return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
+			}
+
+			void main() {
+				vec2 txx = vec2(1.0/resolution.x,0.0);
+				vec2 txy = vec2(0.0,1.0/resolution.y);
+				vec3 diffuse = texture2D(tDiffuse, vUv).rgb;
+				float depthScale = 200.0;
+				float delDist = 0.5;
+				float duoDelDist = 1.0;
+				
+				float depth = readDepth(tDepth, vUv)*depthScale;
+				
+				float dpx = depth-readDepth(tDepth, vUv+txx*delDist)*depthScale;
+				float dmx = depth-readDepth(tDepth, vUv-txx*delDist)*depthScale;
+				float dpy = depth-readDepth(tDepth, vUv+txy*delDist)*depthScale;
+				float dmy = depth-readDepth(tDepth, vUv-txy*delDist)*depthScale;
+				float dpxpy = depth-readDepth(tDepth, vUv+(txx+txy)*delDist)*depthScale;
+				float dmxpy = depth-readDepth(tDepth, vUv+(txy-txx)*delDist)*depthScale;
+				float dpxmy = depth-readDepth(tDepth, vUv+(txx-txy)*delDist)*depthScale;
+				float dmxmy = depth-readDepth(tDepth, vUv-(txx+txy)*delDist)*depthScale;
+				
+				float dptx = depth-readDepth(tDepth, vUv+txx*duoDelDist)*depthScale;
+				float dmtx = depth-readDepth(tDepth, vUv-txx*duoDelDist)*depthScale;
+				float dpty = depth-readDepth(tDepth, vUv+txy*duoDelDist)*depthScale;
+				float dmty = depth-readDepth(tDepth, vUv-txy*duoDelDist)*depthScale;
+				float dtpxpy = depth-readDepth(tDepth, vUv+(txx+txy)*duoDelDist)*depthScale;
+				float dtmxpy = depth-readDepth(tDepth, vUv+(txy-txx)*duoDelDist)*depthScale;
+				float dtpxmy = depth-readDepth(tDepth, vUv+(txx-txy)*duoDelDist)*depthScale;
+				float dtmxmy = depth-readDepth(tDepth, vUv-(txx+txy)*duoDelDist)*depthScale;
+				
+				float ddpx = abs(dptx-dpx);
+				float ddmx = abs(dmtx-dmx);
+				float ddpy = abs(dpty-dpy);
+				float ddmy = abs(dmty-dmy);
+				float ddpxpy = abs(dtpxpy-dpxpy);
+				float ddmxpy = abs(dtmxpy-dmxpy);
+				float ddpxmy = abs(dtpxmy-dpxmy);
+				float ddmxmy = abs(dtmxmy-dmxmy);
+
+				float ddt = (ddpx+ddmx+ddpy+ddmy+ddpxpy+ddmxpy+ddpxmy+ddmxmy)/8.0*gl_FragCoord.w;
+				
+				gl_FragColor.rgb = vec3(1.0-max(min(ddt,1.0),0.0));
+				gl_FragColor.a = 1.0;
+				gl_FragColor = gl_FragColor * vec4(diffuse, 1.0);
+			}
+		</script>
+		
 		<script id="vertexShader" type="x-shader/x-vertex">
 			precision highp float;
-			uniform mat4 modelMatrix;
-			uniform mat4 modelViewMatrix;
-			uniform mat4 projectionMatrix;
 			uniform float ofsScale;
-			attribute vec3 position;
-			attribute vec3 offset;
-			attribute vec2 uv;
-			attribute vec3 mtlcolor;
+			attribute vec3 instposition;
+			attribute vec3 instoffset;
+			attribute vec2 instuv;
+			attribute vec3 instmtlcolor;
 			varying vec3 mtlc;
-			attribute float visible;
+			attribute float instvisible;
 			varying float vVisible;
-			attribute float uniscale;
+			attribute float instuniscale;
 			varying float vUniscale;
 			varying vec2 vUv;
 			
 			void main() {
-				vec3 vPosition = position;
-				vVisible = visible;
-				vUniscale = uniscale;
-				mtlc = mtlcolor;
-				vUv = uv;
+				vec3 vPosition = instposition;
+				vVisible = instvisible;
+				vUniscale = instuniscale;
+				mtlc = instmtlcolor;
+				vUv = instuv;
 				
-				gl_Position = projectionMatrix * modelViewMatrix * vec4( offset + vPosition / 2.0 * ofsScale, 1.0 );
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( instoffset + vPosition / 2.0 * ofsScale, 1.0 );
 			}
 		</script>
 
@@ -41,8 +112,9 @@
 			void main() {
 				if(vVisible > 0.0) {
 					float vEdgeFac = min(min(vUv.x,vUv.y),min(1.0-vUv.x,1.0-vUv.y))>0.02 ? 1.0 : 0.1;
-					gl_FragColor = vec4(mtlc*vEdgeFac, vUniscale);
-					//gl_FragColor = vec4(vUv.x, vUv.y, 0.5, 1.0);
+					gl_FragColor = vec4(mtlc, vUniscale);
+					//gl_FragColor = vec4(mtlc*vEdgeFac, vUniscale);
+					//gl_FragColor = vec4(gl_FragCoord.w);
 				} else {
 					discard;
 				}

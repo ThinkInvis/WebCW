@@ -56,8 +56,8 @@ WebCW.Modules.Gfx.VoxelRenderer = function(args) {
 						VoxDirty: true
 					};
 					nch.Geom = new THREE.InstancedBufferGeometry();
-					nch.Geom.addAttribute('position', _this.cubePositions);
-					nch.Geom.addAttribute('uv', _this.cubeUVs);
+					nch.Geom.addAttribute('instposition', _this.cubePositions);
+					nch.Geom.addAttribute('instuv', _this.cubeUVs);
 					nch.Geom.setIndex(new THREE.BufferAttribute(_this.cubeIndices, 1));
 					
 					nch.IIBuf = new THREE.InstancedInterleavedBuffer(new Float32Array(_this.ChunkSize.x*_this.ChunkSize.y*_this.ChunkSize.z*8), 8, 1).setDynamic(true);
@@ -66,19 +66,19 @@ WebCW.Modules.Gfx.VoxelRenderer = function(args) {
 					for(var u = 0, uend = nch.IIColors.count; u < uend; u++) {
 						nch.IIColors.setXYZ(u, 1, 0, 1);
 					}
-					nch.Geom.addAttribute('mtlcolor', nch.IIColors);
+					nch.Geom.addAttribute('instmtlcolor', nch.IIColors);
 					
 					nch.IIVisible = new THREE.InterleavedBufferAttribute(nch.IIBuf, 1, 6);
 					for(var u = 0, uend = nch.IIVisible.count; u < uend; u++) {
 						nch.IIVisible.setX(u, 0);
 					}
-					nch.Geom.addAttribute('visible', nch.IIVisible);
+					nch.Geom.addAttribute('instvisible', nch.IIVisible);
 					
 					nch.IIScale = new THREE.InterleavedBufferAttribute(nch.IIBuf, 1, 7);
 					for(var u = 0, uend = nch.IIScale.count; u < uend; u++) {
 						nch.IIScale.setX(u, 1);
 					}
-					nch.Geom.addAttribute('uniscale', nch.IIScale);
+					nch.Geom.addAttribute('instuniscale', nch.IIScale);
 					
 					
 					nch.IIOffsets = new THREE.InterleavedBufferAttribute(nch.IIBuf, 3, 0);
@@ -93,7 +93,7 @@ WebCW.Modules.Gfx.VoxelRenderer = function(args) {
 						}
 					}
 					
-					nch.Geom.addAttribute('offset', nch.IIOffsets);
+					nch.Geom.addAttribute('instoffset', nch.IIOffsets);
 					
 					nch.Mesh = new THREE.Mesh(nch.Geom, _this.cubeShader);
 					nch.Mesh.frustumCulled = false;
@@ -105,8 +105,8 @@ WebCW.Modules.Gfx.VoxelRenderer = function(args) {
 					
 					
 					nch.GeomS = new THREE.InstancedBufferGeometry();
-					nch.GeomS.addAttribute('position', _this.cubePositions);
-					nch.GeomS.addAttribute('uv', _this.cubeUVs);
+					nch.GeomS.addAttribute('instposition', _this.cubePositions);
+					nch.GeomS.addAttribute('instuv', _this.cubeUVs);
 					nch.GeomS.setIndex(new THREE.BufferAttribute(_this.cubeIndices, 1));
 					
 					nch.IIBufS = new THREE.InstancedInterleavedBuffer(new Float32Array(_this.ChunkSize.x*_this.ChunkSize.y*_this.ChunkSize.z*8), 8, 1).setDynamic(true);
@@ -115,19 +115,19 @@ WebCW.Modules.Gfx.VoxelRenderer = function(args) {
 					for(var u = 0, uend = nch.IIColorsS.count; u < uend; u++) {
 						nch.IIColorsS.setXYZ(u, 1, 0, 1);
 					}
-					nch.GeomS.addAttribute('mtlcolor', nch.IIColorsS);
+					nch.GeomS.addAttribute('instmtlcolor', nch.IIColorsS);
 					
 					nch.IIVisibleS = new THREE.InterleavedBufferAttribute(nch.IIBufS, 1, 6);
 					for(var u = 0, uend = nch.IIVisibleS.count; u < uend; u++) {
 						nch.IIVisibleS.setX(u, 0);
 					}
-					nch.GeomS.addAttribute('visible', nch.IIVisibleS);
+					nch.GeomS.addAttribute('instvisible', nch.IIVisibleS);
 					
 					nch.IIScaleS = new THREE.InterleavedBufferAttribute(nch.IIBufS, 1, 7);
 					for(var u = 0, uend = nch.IIScaleS.count; u < uend; u++) {
 						nch.IIScaleS.setX(u, 1);
 					}
-					nch.GeomS.addAttribute('uniscale', nch.IIScaleS);
+					nch.GeomS.addAttribute('instuniscale', nch.IIScaleS);
 					
 					
 					nch.IIOffsetsS = new THREE.InterleavedBufferAttribute(nch.IIBufS, 3, 0);
@@ -152,7 +152,7 @@ WebCW.Modules.Gfx.VoxelRenderer = function(args) {
 						}
 					}
 					
-					nch.GeomS.addAttribute('offset', nch.IIOffsetsS);
+					nch.GeomS.addAttribute('instoffset', nch.IIOffsetsS);
 					
 					nch.MeshS = new THREE.Mesh(nch.GeomS, _this.cubeSolidShader);
 					nch.MeshS.frustumCulled = false;
@@ -287,8 +287,12 @@ WebCW.Modules.Gfx.VoxelRenderer = function(args) {
 	_this.cubePositions = new THREE.InterleavedBufferAttribute(_this.cubeVertexBuffer, 3, 0 );
 		// Use vertexBuffer, starting at offset 4, 2 items in uv attribute
 	_this.cubeUVs = new THREE.InterleavedBufferAttribute(_this.cubeVertexBuffer, 2, 4);
-	_this.cubeShader = new THREE.RawShaderMaterial({
+	_this.cubeShader = new THREE.ShaderMaterial({
 		uniforms: {ofsScale: {value: 0.95}},
+		extensions: {
+			fragDepth: true,
+			drawBuffers: true
+		},
 		vertexShader: document.getElementById( 'vertexShader' ).textContent,
 		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
 		side: THREE.DoubleSide,
@@ -298,8 +302,12 @@ WebCW.Modules.Gfx.VoxelRenderer = function(args) {
 		depthWrite: false,
 		blending: 2
 	});
-	_this.cubeSolidShader = new THREE.RawShaderMaterial({
+	_this.cubeSolidShader = new THREE.ShaderMaterial({
 		uniforms: {ofsScale: {value: 1.0}},
+		extensions: {
+			fragDepth: true,
+			drawBuffers: true
+		},
 		vertexShader: document.getElementById( 'vertexShader' ).textContent,
 		fragmentShader: document.getElementById( 'fragmentShader' ).textContent,
 		side: THREE.DoubleSide,
