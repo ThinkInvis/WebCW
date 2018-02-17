@@ -110,8 +110,7 @@ WebCW.Modules.Units.Turret = function(args) {
 	//_this.Mesh.position.copy(_this.Position);
 	
 	_this.InitComplete = false;
-	//_this.Game.UnsafeCode.FBXLoader.load( './WebCW/Models/Turret.fbx', function ( object ) {
-	_this.Game.UnsafeCode.FBXLoader.load('https://github.com/ThinkInvis/WebCW/raw/master/WebCW/Models/turret.fbx', function(object) {
+	_this.Game.UnsafeCode.FBXLoader.load( './WebCW/Models/Turret.fbx', function ( object ) {
 		_this.Mesh = object;
 		object.position.copy(_this.Position);
 		object.scale.set(0.01, 0.01, 0.01);
