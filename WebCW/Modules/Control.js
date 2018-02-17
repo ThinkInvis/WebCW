@@ -1,11 +1,11 @@
-WebCW.CreeperGame.Modules.Control = {};
-WebCW.CreeperGame.Modules.Control.TrackballCam = function(args) {
+WebCW.Modules.Control = {};
+WebCW.Modules.Control.TrackballCam = function(args) {
 	var _this = this;
 	_this.RequiredArgs = ["Game"];
 	_this.DefaultArgs = {
 		FoV: 90,
 		Near: 0.1,
-		Far: 1000,
+		Far: 500,
 		Dist: 5,
 		InitialTarget: new THREE.Vector3(0, 0, 0)
 	};

@@ -1,6 +1,6 @@
-if(isUndef(WebCW.CreeperGame.Modules.Units)) WebCW.CreeperGame.Modules.Units = {};
+if(isUndef(WebCW.Modules.Units)) WebCW.Modules.Units = {};
 
-WebCW.CreeperGame.Modules.Units.Emitter = function(args) {
+WebCW.Modules.Units.Emitter = function(args) {
 	var _this = this;
 	_this.RequiredArgs = ["Game", "Position"];
 	_this.OptionalArgs = {

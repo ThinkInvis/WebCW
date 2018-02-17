@@ -4,10 +4,12 @@ WebCW.Units = {};
 WebCW.UnsafeCode = function(attachto) {
 	var _this = this;
 	_this.Game = attachto;
+	
+	_this.FBXLoader = new THREE.FBXLoader();
 	//////This is stuff that needs to be moved to its own module but I wanted it NOOOOOOooowwwww
 	//Actually partially gave up on keeping this together, so just watch for bad coding practices
 	
-	_this.VoxelRenderer = new WebCW.CreeperGame.Modules.Gfx.VoxelRenderer({Game: _this.Game, ChunkSize: new THREE.Vector3(16, 16, 16)});
+	_this.VoxelRenderer = new WebCW.Modules.Gfx.VoxelRenderer({Game: _this.Game, ChunkSize: new THREE.Vector3(16, 16, 16)});
 	
 	_this.VRaycastInd = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({color: 0x00ccff, transparent: true, opacity: 0.75}));
 	_this.Game.Renderer.Scene.add(_this.VRaycastInd);
@@ -170,13 +172,15 @@ WebCW.UnsafeCode = function(attachto) {
 	_this.onMouseMove = function(rndr, deltas, t, dt, args) {
 		
 	};
+	
+	
 };
 
 WebCW.CreeperGame = function(iniargs) {
 	//SETUP
 	var _this = this;
 	_this.DftGenArgs = {
-		Renderer: function() {return new WebCW.CreeperGame.WebGLRenderer({});}
+		Renderer: function() {return new WebCW.WebGLRenderer({});}
 	};
 	_this.RequiredArgs = [
 		"Dimensions"
@@ -241,10 +245,9 @@ WebCW.CreeperGame = function(iniargs) {
 			_this.ValOoP[typeto][ind] += valfrom * iacargs[0];
 		},
 		Evaporate: function(ind, typefrom, typeto, valfrom, valto, dt, iacargs) {
-			//_this.ValOoP[typefrom][ind] = _this.ValBuf[typefrom][ind]*_this.Substances[typefrom].ConstEvap;
 			if(_this.ValOoP[typefrom][ind] > 0) _this.Dirty[ind] = true;
 			_this.ValOoP[typefrom][ind] *= _this.Substances[typefrom].ConstEvap;
-			if(_this.ValOoP[typefrom][ind] < _this.Substances[typefrom].EvapLimit || isNaN(_this.ValOoP[typefrom][ind])) _this.ValOoP[typefrom][ind] = 0;
+			if(_this.ValOoP[typefrom][ind] < _this.Substances[typefrom].EvapLimit) _this.ValOoP[typefrom][ind] = 0;
 			if(_this.ValOoP[typefrom][ind] < 0 && _this.Substances[typefrom].IsClamped) {
 				_this.ValOoP[typefrom][ind] = 0;
 			}
@@ -292,11 +295,11 @@ WebCW.CreeperGame = function(iniargs) {
 
 	//FUNCTIONS
 	_this.distribFluid = function(type, ifrm, ito, ifrac) {
-		if(ifrac > 0 && ifrac <= 1) {
+		if(ifrac != 0) {
 			_this.Dirty[ifrm] = 1; _this.Dirty[ito] = 1;
-			_this.ValBuf[type][ifrm] -= _this.Val[type][ifrm] * ifrac;
-			_this.ValBuf[type][ito] += _this.Val[type][ifrm] * ifrac;
-		} else if(ifrac > 1) console.log("WARNING: Transfer fraction passed to distribFluid was greater than 1 (would cause erratic behavior)!");
+			_this.ValBuf[type][ifrm] = _this.ValBuf[type][ifrm] - ifrac;
+			_this.ValBuf[type][ito] = _this.ValBuf[type][ito] + ifrac;
+		}
 	};
 	
 	_this.getBiasedPrsDif = function(type, ifrm, ito, iglb) {
@@ -400,7 +403,7 @@ WebCW.CreeperGame = function(iniargs) {
 					
 					var fluidLeft = Math.max(_this.Val[i][inda] - extPTot, 0);
 					var fluidDstb = _this.Val[i][inda] - fluidLeft;
-					dstFrac = fluidDstb/extPTot / _this.Val[i][inda] * _this.Substances[i].SpreadRate * deltaTime;
+					dstFrac = fluidDstb/extPTot * _this.Substances[i].SpreadRate * deltaTime;
 					_this.Dirty[inda] = 1; 
 					_this.distribFluid(i, inda, ipx, dstFrac*extpx);
 					_this.distribFluid(i, inda, imx, dstFrac*extmx);
@@ -522,4 +525,4 @@ WebCW.CreeperGame = function(iniargs) {
 	
 };
 
-WebCW.CreeperGame.Modules = {};
+WebCW.Modules = {};

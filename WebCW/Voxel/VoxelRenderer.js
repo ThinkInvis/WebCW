@@ -1,6 +1,6 @@
-if(isUndef(WebCW.CreeperGame.Modules.Gfx)) WebCW.CreeperGame.Modules.Gfx = {};
+if(isUndef(WebCW.Modules.Gfx)) WebCW.Modules.Gfx = {};
 
-WebCW.CreeperGame.Modules.Gfx.VoxelRenderer = function(args) {
+WebCW.Modules.Gfx.VoxelRenderer = function(args) {
 	var _this = this;
 	_this.RequiredArgs = ["Game", "ChunkSize"];
 	_this.OptionalArgs = {
@@ -18,7 +18,7 @@ WebCW.CreeperGame.Modules.Gfx.VoxelRenderer = function(args) {
 	initArgs(_this, args);
 	
 	if(isUndef(_this.Game.Renderer)) {
-		throw("A CreeperGame.Modules.Gfx.VoxelRenderer was added to a non-CreeperGame object, or added before any compatible Graphics module was added!");
+		throw("A Modules.Gfx.VoxelRenderer was added to a non-CreeperGame object, or added before any compatible Graphics module was added!");
 		return;
 	}
 	

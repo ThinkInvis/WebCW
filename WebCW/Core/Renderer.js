@@ -1,6 +1,6 @@
-if(isUndef(WebCW.CreeperGame.Modules.Gfx)) WebCW.CreeperGame.Modules.Gfx = {};
+if(isUndef(WebCW.Modules.Gfx)) WebCW.Modules.Gfx = {};
 
-WebCW.CreeperGame.Modules.Gfx.WebGLRenderer = function(args) {
+WebCW.Modules.Gfx.WebGLRenderer = function(args) {
 	var _this = this;
 	_this.DefaultArgs = {
 		Container: document.body,
@@ -30,16 +30,19 @@ WebCW.CreeperGame.Modules.Gfx.WebGLRenderer = function(args) {
 			_this.ViewportWidth = _this.Container.offsetWidth;
 			_this.ViewportHeight = _this.Container.offsetHeight;
 			trnd.setSize(_this.ViewportWidth, _this.ViewportHeight);
+			_this.ViewportSize = new THREE.Vector2(_this.ViewportWidth, _this.ViewportHeight);
 			
 			_this.Container.appendChild(trnd.domElement);
 			window.addEventListener( 'resize', function() {
 				_this.ViewportWidth = _this.Container.offsetWidth;
 				_this.ViewportHeight = _this.Container.offsetHeight;
+				_this.ViewportSize.set(_this.ViewportWidth, _this.ViewportHeight);
 				_this.Context.setSize(_this.ViewportWidth, _this.ViewportHeight);
 			});
 			return trnd;
 		}
 	};
+	
 	
 	_this.Draw = function(t, dt, lpargs) {
 		if(isDef(_this.Loop.Accum)) {
@@ -58,7 +61,7 @@ WebCW.CreeperGame.Modules.Gfx.WebGLRenderer = function(args) {
 		for(var i = 0; i < _this.DrawCalls.length; i++) {
 			_this.DrawCalls[i](_this, t, dt, lpargs);
 		}
-		if(isDef(_this.CurrentCamera)) _this.Context.render(_this.Scene, _this.CurrentCamera);
+		if(isDef(_this.CurrentCamera) && _this.DoRender) _this.Context.render(_this.Scene, _this.CurrentCamera);
 		if(_this.addStats) _this.stats.update();
 	};
 	_this.Update = function(t, dt, lpargs) {
@@ -77,4 +80,6 @@ WebCW.CreeperGame.Modules.Gfx.WebGLRenderer = function(args) {
 	if (_this.Context.extensions.get( 'ANGLE_instanced_arrays' ) === false ) {
 		_this.RndNoInst = true;
 	}
+	
+	_this.DoRender = true;
 };
