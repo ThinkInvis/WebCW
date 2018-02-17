@@ -89,6 +89,8 @@ WebCW.Modules.Units.Turret = function(args) {
 			var tgtp = _this.Game.IndexToCoord(tgti);
 			//_this.Mesh.lookAt(_this.Game.IndexToVec3(tgti));
 			_this.Mesh.children[0].children[0].rotation.z = Math.atan2(tgtp[1]-_this.Position.y, tgtp[0]-_this.Position.x)-Math.PI/2;
+			//_this.Mesh.children[0].children[0].children[0].children[0].rotation.set(0, 0, 0);
+			//_this.Mesh.children[0].children[0].children[0].children[0].rotateX(Math.acos((tgtp[0]-_this.Position.x)/tgt[0])+Math.PI/2);
 			_this.fireAccum = _this.fireTimeout;
 			
 			_this.Game.Val[_this.Game.SubstanceIDIndex["Explosion"]][tgti] += _this.antiPressure;
@@ -114,7 +116,8 @@ WebCW.Modules.Units.Turret = function(args) {
 		object.scale.set(0.01, 0.01, 0.01);
 		object.children[0].material = _this.BaseMat;
 		object.children[0].children[0].children[1].material = _this.BaseMat;
-		object.children[0].children[0].children[0].children[0].children[0].material = _this.Mat;
+		object.children[0].children[0].children[0].children[0].children[0].material = _this.BaseMat;
+		object.children[0].children[0].children[0].children[0].children[1].material = _this.Mat;
 		object.material = _this.Mat;
 		_this.Game.Renderer.Scene.add( object );
 		_this.FiringTracer = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), _this.Range, 0xFF0000);
