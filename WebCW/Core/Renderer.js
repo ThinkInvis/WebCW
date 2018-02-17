@@ -53,13 +53,19 @@ WebCW.Modules.Gfx.WebGLRenderer = function(args) {
 	
 	_this.Draw = function(t, dt, lpargs) {
 		if(isDef(_this.Loop.Accum)) {
+			var critloop = false;
+			if(_this.Loop.Accum > _this.Loop.RealStep * 50) {
+				critloop = true;
+				_this.Loop.Accum /= 2;
+			}
+			
 			var TicksOverdue = Math.floor(_this.Loop.Accum/_this.Loop.RealStep);	
 			
 			document.getElementById("DebugText").innerHTML = ["WebCW Pre-Alpha (name also WIP)",
 			"By ThinkInvisible/Inspired by KnuckleCracker's <em>Creeper World</em>",
 			"<a href=\"https://github.com/ThinkInvis/WebCW\">Check out my source on GitHub!</a>|CONTROLS: LMB: Look, RMB: Pan, MWheel/MMB: Zoom",
 			"D: Delete Terrain, T: Use Pencil",
-				"DEBUG: " + _this.Loop.SimTime.toFixed(3) + "s (" + _this.Loop.Accum.toFixed(3) + "/"+_this.Loop.RealStep.toFixed(3)+"s in accum)" + ((TicksOverdue > 4) ? ("<span class=\"errText\">WARNING! " + TicksOverdue + " TICKS BEHIND</span>") : (""))
+				"DEBUG: " + _this.Loop.SimTime.toFixed(3) + "s (" + _this.Loop.Accum.toFixed(3) + "/"+_this.Loop.RealStep.toFixed(3)+"s in accum)" + (critloop ? "<span class=\"critErrText\">50 TICKS BEHIND: SKIPPING FRAMES</span>": ((TicksOverdue > 4) ? ("<span class=\"errText\">WARNING! " + TicksOverdue + " TICKS BEHIND</span>") : ("")))
 			].join("<br />");
 			if(_this.RndNoInst) {
 				document.getElementById("DebugText").innerHTML += "<br /><span class=\"errText\">ERROR: Your browser, or your computer, does not support GPU-instanced geometry. You will not be able to view graphics on this page without this feature.</span>";

@@ -18,6 +18,21 @@ body {
 	text-align: center;
 }
 
+.critErrText {
+	border: 3px solid #222222;
+	border-radius: 4px;
+	display: block !important;
+	color: #000000;
+	background: repeating-linear-gradient(
+		45deg,
+		#FF8888,
+		#FF8888 8px,
+		#FFFF88 8px,
+		#FFFF88 16px
+	);
+	text-align: center;
+}
+
 .clarity-outline {
 	color: black;
 	text-shadow:
