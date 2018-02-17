@@ -20,7 +20,10 @@ WebCW.Modules.Gfx.WebGLRenderer = function(args) {
 		Scene: function(obj, args) {
 			var scn = new THREE.Scene();
 			scn.background = new THREE.Color(0x000000);
-			var light = new THREE.AmbientLight( 0xaaaaaa );
+			var light = new THREE.AmbientLight( 0xffffff );
+			scn.add( light );
+			light = new THREE.DirectionalLight( 0xffffff, 2.0 );
+			light.position.set(0, 0.25, 0.75);
 			scn.add( light );
 			return scn;
 		},

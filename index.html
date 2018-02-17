@@ -33,46 +33,61 @@
 				return viewZToOrthographicDepth( viewZ, cameraNear, cameraFar );
 			}
 
+			vec3 round(vec3 num) {
+				return sign(num)*floor(abs(num)+0.5);
+			}
+			
 			void main() {
 				vec2 txx = vec2(1.0/resolution.x,0.0);
 				vec2 txy = vec2(0.0,1.0/resolution.y);
 				vec3 diffuse = texture2D(tDiffuse, vUv).rgb;
-				float depthScale = 200.0;
+				
+				//posterize
+				diffuse = round(diffuse*6.0)/6.0;
+				
+				float depthScale = 25.0;
 				float delDist = 0.5;
 				float duoDelDist = 1.0;
 				
 				float depth = readDepth(tDepth, vUv)*depthScale;
 				
-				float dpx = depth-readDepth(tDepth, vUv+txx*delDist)*depthScale;
-				float dmx = depth-readDepth(tDepth, vUv-txx*delDist)*depthScale;
-				float dpy = depth-readDepth(tDepth, vUv+txy*delDist)*depthScale;
-				float dmy = depth-readDepth(tDepth, vUv-txy*delDist)*depthScale;
-				float dpxpy = depth-readDepth(tDepth, vUv+(txx+txy)*delDist)*depthScale;
-				float dmxpy = depth-readDepth(tDepth, vUv+(txy-txx)*delDist)*depthScale;
-				float dpxmy = depth-readDepth(tDepth, vUv+(txx-txy)*delDist)*depthScale;
-				float dmxmy = depth-readDepth(tDepth, vUv-(txx+txy)*delDist)*depthScale;
+				//first derivatives of depth
+				float dpx = depth/(readDepth(tDepth, vUv+txx*delDist)*depthScale);
+				float dmx = depth/(readDepth(tDepth, vUv-txx*delDist)*depthScale);
+				float dpy = depth/(readDepth(tDepth, vUv+txy*delDist)*depthScale);
+				float dmy = depth/(readDepth(tDepth, vUv-txy*delDist)*depthScale);
+				float dpxpy = depth/(readDepth(tDepth, vUv+(txx+txy)*delDist)*depthScale);
+				float dmxpy = depth/(readDepth(tDepth, vUv+(txy-txx)*delDist)*depthScale);
+				float dpxmy = depth/(readDepth(tDepth, vUv+(txx-txy)*delDist)*depthScale);
+				float dmxmy = depth/(readDepth(tDepth, vUv-(txx+txy)*delDist)*depthScale);
 				
-				float dptx = depth-readDepth(tDepth, vUv+txx*duoDelDist)*depthScale;
-				float dmtx = depth-readDepth(tDepth, vUv-txx*duoDelDist)*depthScale;
-				float dpty = depth-readDepth(tDepth, vUv+txy*duoDelDist)*depthScale;
-				float dmty = depth-readDepth(tDepth, vUv-txy*duoDelDist)*depthScale;
-				float dtpxpy = depth-readDepth(tDepth, vUv+(txx+txy)*duoDelDist)*depthScale;
-				float dtmxpy = depth-readDepth(tDepth, vUv+(txy-txx)*duoDelDist)*depthScale;
-				float dtpxmy = depth-readDepth(tDepth, vUv+(txx-txy)*duoDelDist)*depthScale;
-				float dtmxmy = depth-readDepth(tDepth, vUv-(txx+txy)*duoDelDist)*depthScale;
+				float dpxx = depth/(readDepth(tDepth, vUv+txx*duoDelDist)*depthScale);
+				float dmxx = depth/(readDepth(tDepth, vUv-txx*duoDelDist)*depthScale);
+				float dpyy = depth/(readDepth(tDepth, vUv+txy*duoDelDist)*depthScale);
+				float dmyy = depth/(readDepth(tDepth, vUv-txy*duoDelDist)*depthScale);
+				float dpxxpyy = depth/(readDepth(tDepth, vUv+(txx+txy)*duoDelDist)*depthScale);
+				float dmxxpyy = depth/(readDepth(tDepth, vUv+(txy-txx)*duoDelDist)*depthScale);
+				float dpxxmyy = depth/(readDepth(tDepth, vUv+(txx-txy)*duoDelDist)*depthScale);
+				float dmxxmyy = depth/(readDepth(tDepth, vUv-(txx+txy)*duoDelDist)*depthScale);
 				
-				float ddpx = abs(dptx-dpx);
-				float ddmx = abs(dmtx-dmx);
-				float ddpy = abs(dpty-dpy);
-				float ddmy = abs(dmty-dmy);
-				float ddpxpy = abs(dtpxpy-dpxpy);
-				float ddmxpy = abs(dtmxpy-dmxpy);
-				float ddpxmy = abs(dtpxmy-dpxmy);
-				float ddmxmy = abs(dtmxmy-dmxmy);
+				//second derivative of depth
+				float dptx = dpxx/dpx;
+				float dmtx = dmxx/dmx;
+				float dpty = dpyy/dpy;
+				float dmty = dmyy/dmy;
+				float dtpxpy = dpxpy/dpxxpyy;
+				float dtmxpy = dmxpy/dmxxpyy;
+				float dtpxmy = dpxmy/dpxxmyy;
+				float dtmxmy = dmxmy/dmxxmyy;
 
-				float ddt = (ddpx+ddmx+ddpy+ddmy+ddpxpy+ddmxpy+ddpxmy+ddmxmy)/8.0*gl_FragCoord.w;
+				float ddt = (dptx+dmtx+dpty+dmty+dtpxpy+dtmxpy+dtpxmy+dtmxmy)/(dpx+dmx+dpy+dmy+dpxpy+dmxpy+dpxmy+dmxmy);
 				
-				gl_FragColor.rgb = vec3(1.0-max(min(ddt,1.0),0.0));
+				float clampddt = max(min(ddt,1.0),0.0);
+				if(clampddt > 0.996) clampddt = 1.0;
+				clampddt = pow(clampddt, 30.0);
+				
+				
+				gl_FragColor.rgb = vec3(clampddt);
 				gl_FragColor.a = 1.0;
 				gl_FragColor = gl_FragColor * vec4(diffuse, 1.0);
 			}
