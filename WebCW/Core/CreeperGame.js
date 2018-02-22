@@ -14,122 +14,11 @@ WebCW.UnsafeCode = function(attachto) {
 	_this.VRaycastInd = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({color: 0x00ccff, transparent: true, opacity: 0.75}));
 	_this.Game.Renderer.Scene.add(_this.VRaycastInd);
 	
-	////Input Handling
-	_this.KeyDownFns = [];
-	_this.KeyUpFns = [];
-	_this.KeyHoldFns = [];
-	_this.MouseMoveFns = [];
-	
-	_this.KeyDownArr = {};
-	_this.KeysToProcess = [];
-	_this.KeyHoldDuration = {};
-	
-	_this.MouseMoveToProcess = [];
-	
-	_this.MousePos = new THREE.Vector2();
-	_this.MouseDelta = new THREE.Vector2();
-	_this.CliMousePos = new THREE.Vector2();
-	_this.CliMouseDelta = new THREE.Vector2();
-	_this.RelMousePos = new THREE.Vector2();
-	_this.RelMouseDelta = new THREE.Vector2();
+
 	_this.Raycaster = new THREE.Raycaster();
 	_this.RaycastObjects = [];
 	_this.LastRaycastResult = [];
-	
-	_this.onDocumentKeyDown = function( event ) {
-		if(!_this.KeyDownArr[event.keyCode]) {
-			_this.KeyHoldDuration[event.keyCode] = 0;
-			_this.KeyDownArr[event.keyCode] = true;
-			_this.KeysToProcess.push([event.keyCode, 1]);
-		}
-		event.preventDefault();
-	};
-	_this.onDocumentKeyUp = function( event ) {
-		if(_this.KeyDownArr[event.keyCode]) {
-			_this.KeyDownArr[event.keyCode] = false;
-			_this.KeysToProcess.push([event.keyCode, 0]);
-		}
-		event.preventDefault();
-	};
-	_this.onDocumentMouseMove = function(event) {
-		_this.MouseDelta.set(event.screenX - _this.MousePos.x, event.screenY - _this.MousePos.y);
-		_this.MousePos.set(event.screenX, event.screenY);
-		_this.CliMouseDelta.set(event.clientX - _this.CliMousePos.x, event.clientY - _this.CliMousePos.y);
-		_this.CliMousePos.set(event.clientX, event.clientY);
-		var rmdx = (event.clientX/_this.Game.Renderer.ViewportWidth)*2-1;
-		var rmdy = -(event.clientY/_this.Game.Renderer.ViewportHeight)*2+1;
-		_this.RelMouseDelta.set(rmdx - _this.RelMousePos.x, rmdy - _this.RelMousePos.y);
-		_this.RelMousePos.set(rmdx, rmdy);
-		if(isDef(_this.Game.Renderer.CurrentCamera)) {
-			_this.Raycaster.setFromCamera(_this.RelMousePos, _this.Game.Renderer.CurrentCamera);
-			_this.LastRaycastResult = _this.Raycaster.intersectObjects(_this.RaycastObjects);
-			if(isDef(_this.LastRaycastResult[0])) {
-				//console.log(_this.LastRaycastResult);
-			var htind = _this.LastRaycastResult[0].object.GdIndx;
-				_this.VRaycastInd.position.copy(new THREE.Vector3().copy(_this.LastRaycastResult[0].face.normal).add(_this.Game.IndexToVec3(_this.LastRaycastResult[0].object.GdIndx)));
-			}
-		}
-		
-		_this.MouseMoveToProcess.push([new THREE.Vector2().copy(_this.MouseDelta), new THREE.Vector2().copy(_this.RelMouseDelta)]);
-		
-		event.preventDefault();
-	};
-	_this.MouseBtnIndices = [[1,"LeftMouseBtn"],[2,"RightMouseBtn"],[4,"MiddleMouseBtn"],[8,"FwdMouseBtn"],[16,"BackMouseBtn"]];
-	_this.onDocumentMouseDown = function(event) {
-		//NOTE: this and mouseup aren't working quite right. Event propagation being stopped by THREE.js TrackballControls?
-		for(var i = 0; i < _this.MouseBtnIndices.length; i++) {
-			if((event.buttons & _this.MouseBtnIndices[i][0]) == _this.MouseBtnIndices[i][0]) {
-				var btn = _this.MouseBtnIndices[i][1];
-				if(!_this.KeyDownArr[btn]) {
-					_this.KeyHoldDuration[btn] = 0;
-					_this.KeyDownArr[btn] = true;
-					_this.KeysToProcess.push([btn, 1]);
-				}
-				return;
-			}
-		}
-		event.preventDefault();
-	};
-	_this.onDocumentMouseUp = function(event) {
-		for(var i = 0; i < _this.MouseBtnIndices.length; i++) {
-			if(event.buttons & _this.MouseBtnIndices[i][0] == _this.MouseBtnIndices[i][0]) {
-				var btn = _this.MouseBtnIndices[i][1];
-				if(!_this.KeyDownArr[btn]) {
-					_this.KeyDownArr[btn] = false;
-					_this.KeysToProcess.push([btn, 0]);
-				}
-				return;
-			}
-		}
-		event.preventDefault();
-	};
-	document.addEventListener( 'keydown', _this.onDocumentKeyDown, false );
-	document.addEventListener( 'keyup', _this.onDocumentKeyUp, false );
-	document.addEventListener( 'mousemove', _this.onDocumentMouseMove, false );
-	document.addEventListener( 'mousedown', _this.onDocumentMouseDown, false );
-	document.addEventListener( 'mouseup', _this.onDocumentMouseUp, false );
-	
-	_this.Game.Renderer.DrawCalls.push(function(rndr, t, dt, args){
-		var keydat;
-		for(var i = 0; i < _this.KeysToProcess.length; i++) {
-			keydat = _this.KeysToProcess.pop();
-			if(keydat[1] == 1) {
-				_this.onKeyDown(rndr, keydat[0], t, dt, args);
-			} else {
-				_this.onKeyUp(rndr, keydat[0], t, dt, args);
-			}
-		}
-		for(var i = 0; i < _this.MouseMoveToProcess.length; i++) {
-			keydat = _this.MouseMoveToProcess.pop();
-			_this.onMouseMove(rndr, keydat, t, dt, args);
-		}
-		for(var k in _this.KeyDownArr) { 
-			if(_this.KeyDownArr[k]) {
-				_this.onKeyHold(rndr, k, t, dt, args);
-				_this.KeyHoldDuration[k] += dt;
-			}
-		}
-	});
+	//on mouse move:
 	
 	//dat.GUI debugger tools
 	_this.gui = new dat.GUI({width: 300});
@@ -144,7 +33,10 @@ WebCW.UnsafeCode = function(attachto) {
 	folderAdder.add(params, 'pencilType', _this.Game.SubstanceNameIndex);
 	folderAdder.open();
 	
-	_this.onKeyDown = function(rndr, key, t, dt, args) {
+	_this.RelMousePos = new THREE.Vector2();
+	_this.RelMouseDelta = new THREE.Vector2();
+		
+	_this.Game.InputHandler.keyDownHandlers.push(function(key,t,dt,args) {
 		if(isDef(_this.LastRaycastResult[0])) {
 			var htind = _this.LastRaycastResult[0].object.GdIndx;
 			var upind = _this.Game.Vec3ToIndex(new THREE.Vector3().copy(_this.LastRaycastResult[0].face.normal).add(_this.Game.IndexToVec3(_this.LastRaycastResult[0].object.GdIndx)));
@@ -163,15 +55,23 @@ WebCW.UnsafeCode = function(attachto) {
 				_this.Game.Dirty[upind] = 1;
 			}
 		}
-	};
-	_this.onKeyUp = function(rndr, key, t, dt, args) {
-	};
-	_this.onKeyHold = function(rndr, key, t, dt, args) {
-		
-	};
-	_this.onMouseMove = function(rndr, deltas, t, dt, args) {
-		
-	};
+	});
+	
+	_this.Game.InputHandler.mouseMoveHandlers.push(function(deltas,t,dt,args) {
+		if(isDef(_this.Game.Renderer.CurrentCamera)) {
+			var rmdx = (_this.Game.InputHandler.CliMousePos.x/_this.Game.Renderer.ViewportWidth)*2-1;
+			var rmdy = -(_this.Game.InputHandler.CliMousePos.y/_this.Game.Renderer.ViewportHeight)*2+1;
+			_this.RelMouseDelta.set(rmdx - _this.RelMousePos.x, rmdy - _this.RelMousePos.y);
+			_this.RelMousePos.set(rmdx, rmdy);
+			_this.Raycaster.setFromCamera(_this.RelMousePos, _this.Game.Renderer.CurrentCamera);
+			_this.LastRaycastResult = _this.Raycaster.intersectObjects(_this.RaycastObjects);
+			if(isDef(_this.LastRaycastResult[0])) {
+				//console.log(_this.LastRaycastResult);
+			var htind = _this.LastRaycastResult[0].object.GdIndx;
+				_this.VRaycastInd.position.copy(new THREE.Vector3().copy(_this.LastRaycastResult[0].face.normal).add(_this.Game.IndexToVec3(_this.LastRaycastResult[0].object.GdIndx)));
+			}
+		}
+	});
 	
 	_this.setupPostproc = function() {
 		//Postprocessing
@@ -223,10 +123,13 @@ WebCW.CreeperGame = function(iniargs) {
 		Renderer: function() {return new WebCW.WebGLRenderer({});}
 	};
 	_this.RequiredArgs = [
-		"Dimensions"
+		"Dimensions", "InputHandler"
 	];
 	initArgs(_this, iniargs);
 	
+	_this.Renderer.DrawCalls.push(function(rndr, t, dt, args){
+		_this.InputHandler.HandleInputs(t, dt, args);
+	});
 	
 	//PUBLIC VARS
 	_this.GameObjects = [];

@@ -6,7 +6,11 @@ var TestGame;
 var CWTestInit = function() {
 	if(!Detector.webgl) Detector.addGetWebGLMessage();
 	
-	TestGame = new WebCW.CreeperGame({Dimensions: new THREE.Vector3(32, 32, 16), Renderer: new WebCW.Modules.Gfx.WebGLRenderer({Container: document.getElementById("container"), addStats: true})});
+	TestGame = new WebCW.CreeperGame({
+		Dimensions: new THREE.Vector3(32, 32, 16),
+		Renderer: new WebCW.Modules.Gfx.WebGLRenderer({Container: document.getElementById("container"), addStats: true}),
+		InputHandler: new WebCW.BrowserInterface({BlockedKeys: [8, 9, 13, 14, 27, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 45, 46]})
+	});
 	TestGame.GameObjects.push(new WebCW.Modules.Units.Emitter({Game: TestGame, Position: new THREE.Vector3(1, 1, 1), FlowRate: 300}));
 	TestGame.GameObjects.push(new WebCW.Modules.Units.Emitter({Game: TestGame, Position: new THREE.Vector3(1, 1, 6), FlowRate: 100}));
 	TestGame.GameObjects.push(new WebCW.Modules.Units.Turret({Game: TestGame, Position: new THREE.Vector3(10, 10, 8), fireTimeout: 0.4, antiPressure: 12500}));
