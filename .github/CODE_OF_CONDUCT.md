@@ -1,0 +1,3 @@
+As WebCW is a fan project originating from one user, for mostly personal use, it is not intended to have a centralized community. Participants on its GitHub repo should investigate the [KnuckleCracker Discord](https://discordapp.com/invite/knucklecracker) if looking for such a community. Said community is kept to a PG-13 level; offensive language and behaviors are not accepted there, nor will they be accepted here.
+
+In general, as a small project, a corollary to Murphy's Law applies: if you do something offensive, somthing stupid, or something that otherwise flies in the face of basic manners and/or common sense, you will most likely face consequences.

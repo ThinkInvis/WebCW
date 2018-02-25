@@ -1,0 +1,1 @@
+A project based on KnuckleCracker's Creeper World series, built on HTML and the ThreeJS library. Designed for less realistic graphics and more realistic gameplay.
