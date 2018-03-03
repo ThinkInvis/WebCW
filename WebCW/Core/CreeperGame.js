@@ -139,7 +139,7 @@ WebCW.CreeperGame = function(iniargs) {
 	_this.Substances = [
 		new WebCW.CreeperGame.Substance({IDName: "Atmosphere", IsSolid: false, Class: "Yield", IsVisible: false}),
 		new WebCW.CreeperGame.Substance({IDName: "WorldBoundary", DisplayName: "OUT OF BOUNDS", Class: "Terrain", IsVisible: false}),
-		new WebCW.CreeperGame.Substance({IDName: "Dirt", Color: [119/255, 68/255, 34/255], BlocksTurrets: true}),
+		new WebCW.CreeperGame.Substance({IDName: "Dirt", Color: [119/255, 68/255, 34/255], BlocksLoS: true}),
 		new WebCW.CreeperGame.Substance({IDName: "Creeper", IsSolid: false, Class: "Liquid",
 			GlobalPressure: [
 				-1, -1, -6, //Add to positive-coord Von Neumann neighbors

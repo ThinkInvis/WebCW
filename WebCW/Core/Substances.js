@@ -3,8 +3,8 @@ WebCW.CreeperGame.Substance = function(args) {
 	var _this = this;
 	_this.DefaultArgs = {
 		Color: [1, 0, 0],
-		IsSolid: true,
-		IsVisible: true,
+		IsSolid: true, //controls behavior
+		IsVisible: true, //direct rendering toggle, does not affect line-of-sight calc (use BlocksLoS)
 		GlobalPressure: [0,0,0,0,0,0],
 		SpreadLimit: 0,
 		EvapLimit: 0.01,
@@ -12,7 +12,7 @@ WebCW.CreeperGame.Substance = function(args) {
 		SpreadRate: 1,
 		Class: "Terrain",
 		IsClamped: true, //prevents negative pressure
-		BlocksTurrets: false
+		BlocksLoS: false //blocks turret targeting, etc.
 	};
 	_this.DftGenArgs = {
 		DisplayName: function() {

@@ -44,7 +44,7 @@ WebCW.Modules.Units.Turret = function(args) {
 		var inds = _this.Game.GetLine(_this.Position, tgtpos);
 		for(var i = 0; i < inds.length; i++) {
 			for(var j = 0; j < _this.Game.Substances.length; j++) {
-				if(_this.Game.Substances[j].BlocksTurrets) {
+				if(_this.Game.Substances[j].BlocksLoS) {
 					if(_this.Game.Val[j][inds[i]] > 0) return true;
 				}
 			}
