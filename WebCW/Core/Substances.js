@@ -1,5 +1,5 @@
 //just a "structure", with all functions handled in CreeperGame instead of here -- can this be replaced with something else?
-WebCW.CreeperGame.Substance = function(args) {
+WebCW.Substance = function(args) {
 	var _this = this;
 	_this.DefaultArgs = {
 		Color: [1, 0, 0],

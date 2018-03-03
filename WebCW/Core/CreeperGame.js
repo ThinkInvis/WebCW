@@ -137,18 +137,18 @@ WebCW.CreeperGame = function(iniargs) {
 	_this.Colliders = [];
 	
 	_this.Substances = [
-		new WebCW.CreeperGame.Substance({IDName: "Atmosphere", IsSolid: false, Class: "Yield", IsVisible: false}),
-		new WebCW.CreeperGame.Substance({IDName: "WorldBoundary", DisplayName: "OUT OF BOUNDS", Class: "Terrain", IsVisible: false}),
-		new WebCW.CreeperGame.Substance({IDName: "Dirt", Color: [119/255, 68/255, 34/255], BlocksLoS: true}),
-		new WebCW.CreeperGame.Substance({IDName: "Creeper", IsSolid: false, Class: "Liquid",
+		new WebCW.Substance({IDName: "Atmosphere", IsSolid: false, Class: "Yield", IsVisible: false}),
+		new WebCW.Substance({IDName: "WorldBoundary", DisplayName: "OUT OF BOUNDS", Class: "Terrain", IsVisible: false}),
+		new WebCW.Substance({IDName: "Dirt", Color: [119/255, 68/255, 34/255], BlocksLoS: true}),
+		new WebCW.Substance({IDName: "Creeper", IsSolid: false, Class: "Liquid",
 			GlobalPressure: [
 				-1, -1, -6, //Add to positive-coord Von Neumann neighbors
 				-1, -1, 3 //Add to negative-coord Von Neumann neighbors
 			], SpreadLimit: 0, EvapLimit: 0.01, SpreadRate: 4, Color: [255/255, 0/255, 255/255]}),
-		new WebCW.CreeperGame.Substance({IDName: "Explosion", Color: [70/255, 70/255, 70/255], IsSolid: false, Class: "Liquid", GlobalPressure: [0,0,0,0,0,0], SpreadLimit: 0, EvapLimit: 0.1, SpreadRate: 10, ConstEvap: 0.25}),
-		new WebCW.CreeperGame.Substance({IDName: "Shield", Color: [10/255, 60/255, 255/255]}),
-		new WebCW.CreeperGame.Substance({IDName: "CrystalCreep", DisplayName: "Crystallized Creeper", Color: [125/255, 10/255, 125/255]}),
-		new WebCW.CreeperGame.Substance({IDName: "TNT", DisplayName: "Trinitrotoluene", Color: [125/255, 10/255, 10/255], EvapLimit: 1})
+		new WebCW.Substance({IDName: "Explosion", Color: [70/255, 70/255, 70/255], IsSolid: false, Class: "Liquid", GlobalPressure: [0,0,0,0,0,0], SpreadLimit: 0, EvapLimit: 0.1, SpreadRate: 10, ConstEvap: 0.25}),
+		new WebCW.Substance({IDName: "Shield", Color: [10/255, 60/255, 255/255]}),
+		new WebCW.Substance({IDName: "CrystalCreep", DisplayName: "Crystallized Creeper", Color: [125/255, 10/255, 125/255]}),
+		new WebCW.Substance({IDName: "TNT", DisplayName: "Trinitrotoluene", Color: [125/255, 10/255, 10/255], EvapLimit: 1})
 	];
 	
 	_this.SubstanceIDIndex = {
