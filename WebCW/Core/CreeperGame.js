@@ -1,5 +1,5 @@
 var WebCW = {};
-WebCW.Units = {};
+estabObjPath("WebCW.Units");
 
 WebCW.UnsafeCode = function(attachto) {
 	var _this = this;

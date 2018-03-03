@@ -1,4 +1,4 @@
-if(isUndef(WebCW.Modules.Gfx)) WebCW.Modules.Gfx = {};
+estabObjPath("WebCW.Modules.Gfx");
 
 WebCW.Modules.Gfx.WebGLRenderer = function(args) {
 	var _this = this;

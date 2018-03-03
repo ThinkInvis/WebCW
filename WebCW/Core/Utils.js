@@ -82,6 +82,22 @@ var isDef = function(arg) {
 	return (typeof arg !== 'undefined');
 };
 
+////void estabObjPath(string path): Recursively creates an object path IFF it isn't already defined.
+//Some code/inspiration from https://stackoverflow.com/questions/6491463/accessing-nested-javascript-objects-with-string-key
+var estabObjPath = function(path) {
+	path = path.split('.');
+	var i, len;
+	var testMaster = path[0];
+	for(i = 1, len = path.length; i < len; i++) {
+		testObj = path[i];
+		if(isUndef(testMaster[testObj])) {
+			testMaster[testObj] = {};
+			console.log("added " + testObj + " to " + testMaster);
+		}
+		testMaster = testMaster[testObj]; 
+	}
+};
+
 /////////////////////////////
 //////ARGUMENTS HANDLER//////
 /////////////////////////////
@@ -94,12 +110,13 @@ var opArg = function(arg, dft) {
 	return isUndef(arg) ? dft : arg;
 };
 
+////var opArgGen(var arg, var dft, var dftobj, var dftargs): A "safe" version of opArg that calls an argument-generating function IFF the default is used -- allowing shenanigans with e.g. incrementing global variables for only defaulted args.
 var opArgGen = function(arg, dft, dftobj, dftargs) {
 	if(isDef(arg)) return arg;
 	return dft(dftobj, dftargs);
 };
 
-////var noOpArg(var arg): Returns [arg], and throws an exception if [arg] is undefined.
+////var noOpArg(var arg): Returns [arg], and throws a browser exception if [arg] is undefined.
 var noOpArg = function(arg, name) {
 	if(isUndef(arg)) throw("A function that required a defined value for argument \"" + name + "\" received undefined instead!");
 	return arg;

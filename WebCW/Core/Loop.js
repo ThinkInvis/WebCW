@@ -3,7 +3,6 @@
 
 //TODO: Integration logic for dilation?
 
-
 var FixedTimestepLoop = function(args) {
 	//SETUP
 	var _this = this;

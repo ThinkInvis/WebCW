@@ -1,4 +1,4 @@
-if(isUndef(WebCW.Modules.Units)) WebCW.Modules.Units = {};
+estabObjPath("WebCW.Modules.Units");
 
 WebCW.Modules.Units.Turret = function(args) {
 	var _this = this;

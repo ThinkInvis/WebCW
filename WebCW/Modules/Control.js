@@ -1,4 +1,5 @@
-WebCW.Modules.Control = {};
+estabObjPath("WebCW.Modules.Control");
+
 WebCW.Modules.Control.TrackballCam = function(args) {
 	var _this = this;
 	_this.RequiredArgs = ["Game"];
