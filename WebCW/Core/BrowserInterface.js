@@ -331,7 +331,7 @@ WebCW.BrowserInterface = function(args) {
 				}
 			}
 		}
-		if(event.buttons & 8 == 8 || event.buttons & 16 == 16) event.preventDefault(); //hardcoded: prevent mouse back/forward navigation buttons from actually changing browser page
+		if((event.buttons & 8) == 8 || (event.buttons & 16) == 16) event.preventDefault(); //hardcoded: prevent mouse back/forward navigation buttons from actually changing browser page
 	};
 	_this.onDocumentMouseUp = function(event) {
 		for(var i = 0; i < _this.MouseBtnIndices.length; i++) {
@@ -343,7 +343,7 @@ WebCW.BrowserInterface = function(args) {
 				}
 			}
 		}
-		if(event.buttons & 8 == 8 || event.buttons & 16 == 16) event.preventDefault(); //hardcoded: prevent mouse back/forward navigation buttons from actually changing browser page
+		if((event.buttons & 8) == 8 || (event.buttons & 16) == 16) event.preventDefault(); //hardcoded: prevent mouse back/forward navigation buttons from actually changing browser page
 	};
 	document.addEventListener( 'keydown', _this.onDocumentKeyDown, false );
 	document.addEventListener( 'keyup', _this.onDocumentKeyUp, false );
