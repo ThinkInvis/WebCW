@@ -87,7 +87,7 @@ var isDef = function(arg) {
 var estabObjPath = function(path) {
 	path = path.split('.');
 	var i, len;
-	var testMaster = path[0];
+	var testMaster = window[path[0]]; //TODO: Edited on 7/14/2018 to add the "window" accessor. Wasn't needed before; what changed?
 	for(i = 1, len = path.length; i < len; i++) {
 		testObj = path[i];
 		if(isUndef(testMaster[testObj])) {
